@@ -13,7 +13,7 @@
         "externalConsole": false,
         "MIMode": "gdb",
         "miDebuggerPath": "C:\\cygwin64\\bin\\gdb.exe",
-        "miDebuggerArgs": "",
+        "miDebuggerArgs": "-exec dir",
         "setupCommands": [
           {
             "description": "Enable pretty-printing for gdb",
