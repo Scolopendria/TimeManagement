@@ -8,9 +8,9 @@
 			"args": [
 				"-fdiagnostics-color=always",
 				"-g",
-				"${workspaceFolder}\\FRC_main.cpp",
+				"${workspaceFolder}\\TM_Main.cpp",
 				"-o",
-				"${workspaceFolder}\\FRC_main.exe"
+				"${workspaceFolder}\\TM_Main.exe"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
