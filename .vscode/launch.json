@@ -5,7 +5,7 @@
         "name": "g++.exe - Build and debug active file",
         "type": "cppdbg",
         "request": "launch",
-        "program": "C:/Users/T15/Documents/GitHub/TimeMangement/TM_Main.exe",
+        "program": "TM_Main.exe",
         "args": [],
         "stopAtEntry": true,
         "cwd": "/",
@@ -13,7 +13,7 @@
         "externalConsole": false,
         "MIMode": "gdb",
         "miDebuggerPath": "C:\\cygwin64\\bin\\gdb.exe",
-        "miDebuggerArgs": "-exec directory C:/Users/T15/Documents/GitHub/TimeMangement",
+        "miDebuggerArgs": "-exec directory C:/Users/T15/Documents/GitHub/TimeManagement",
         "setupCommands": [
           {
             "description": "Enable pretty-printing for gdb",
