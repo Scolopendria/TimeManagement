@@ -1,0 +1,46 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "C/C++: g++.exe build",
+			"command": "g++",
+			"args": [
+				"-fdiagnostics-color=always",
+				"-g",
+				"${workspaceFolder}\\FRC_main.cpp",
+				"-o",
+				"${workspaceFolder}\\FRC_main.exe",
+				"-I",
+				"${workspaceFolder}\\allwpilib\\wpilibc\\src\\main\\native\\include",
+				"-I",
+				"${workspaceFolder}\\allwpilib\\wpiutil\\src\\main\\native\\fmtlib\\include",
+				"-I",
+				"${workspaceFolder}\\allwpilib\\hal\\src\\main\\native\\include",
+				"-I",
+				"${workspaceFolder}\\allwpilib\\wpimath\\src\\main\\native\\include",
+				"-I",
+				"${workspaceFolder}\\allwpilib\\wpiutil\\src\\main\\native\\include"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: C:\\cygwin64\\bin\\g++.exe"
+		},
+		{
+			"type": "process",
+			"label": "gdb",
+			"command": "gdb",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			}
+		}
+	]
+}
