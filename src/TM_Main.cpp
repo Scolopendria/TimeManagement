@@ -4,7 +4,6 @@
 #include "headers.h"
 
 int main(){
-    MegaStr mstr;
-    mstr.filter();
+    MegaStr mStr;
     return 0;
 }

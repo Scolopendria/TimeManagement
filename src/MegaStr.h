@@ -1,14 +1,13 @@
 #ifndef MEGASTR_H
 #define MEGASTR_H
 
-#include "getFile.cpp"
-
 class MegaStr {
     public:
         MegaStr();
-        void filter();
     private:
-        std::string str = getFile("system.txt");
+        std::string getFile(const std::string& path);
+        std::string strip(std::string s);
+        std::string str = strip(getFile("system.txt"));
 };
 
 #include "MegaStr.cpp"
