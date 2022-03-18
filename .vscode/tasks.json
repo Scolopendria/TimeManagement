@@ -8,12 +8,12 @@
 			"args": [
 				"-fdiagnostics-color=always",
 				"-g",
-				"${workspaceFolder}\\TM_Main.cpp",
+				"${workspaceFolder}\\src\\TM_Main.cpp",
 				"-o",
 				"${workspaceFolder}\\TM_Main.exe"
 			],
 			"options": {
-				"cwd": "${workspaceFolder}"
+				"cwd": "${workspaceFolder}\\src"
 			},
 			"problemMatcher": [
 				"$gcc"
