@@ -5,5 +5,6 @@
 
 int main(){
     MegaStr mStr;
+    mStr.putFile();
     return 0;
 }

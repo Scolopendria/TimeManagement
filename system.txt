@@ -1,4 +1,10 @@
-Hello World!
-How are you?
-    "The weather is nice today."
-    "Thank you!"
+"random":{
+	"Hello":{
+		"World"="Hey"
+		"Yay":{
+		}
+	}
+	"yummuy":{
+		"Woah!!!"="You are High."
+	}
+}
