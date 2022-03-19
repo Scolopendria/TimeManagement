@@ -1,10 +1,12 @@
-"Automatic Time Management":{
-	"Hello":{
-		"World"="Hey"
-		"Yay":{
+"Automatic Time Management"{
+	"happy"="yolo"
+	"yosei"{
+		"loli"="haha"
+		"lksjdf"{
+			"slkjelk"="jldl"
+		}
+		"lkrlk"{
 		}
 	}
-	"yummuy":{
-		"Woah!!!"="You are High."
-	}
+	"sldkfj"="lkfjd"
 }

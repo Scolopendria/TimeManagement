@@ -7,20 +7,18 @@
 #include <sstream>
 
 MegaStr::MegaStr(){
-    vStr.setString(getFile())->strip();
     std::cout << "Created MegaStr Object" << std::endl;
 }
 
 std::string MegaStr::getFile(){
+    std::string pStr{""};
     auto ss = std::ostringstream{};
     std::ifstream file("system.txt");
-    if (!file.is_open()) {// Guard for: File Not Found
-        std::cout << "Creating new file" << std::endl;
-        return "\"Automatic Time Management\":{}";
-    }
+    if (!file.is_open()) return "\"Automatic Time Management\"{}";
     ss << file.rdbuf();
-    file.close();
-    return ss.str();
+    pStr = ss.str();
+    if (pStr == "") return "\"Automatic Time Management\"{}";
+    return pStr;
 }
 
 void MegaStr::putFile(){

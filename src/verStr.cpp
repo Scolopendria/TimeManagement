@@ -5,85 +5,82 @@
 #include <iostream>
 
 verStr::verStr(std::string s){
-    setString(s)->strip();
-    std::cout << "Creating verStr Object" << std::endl;
+    String = s;
+    strip();
+    std::cout << "Created verStr Object" << std::endl;
 }
 
 std::string verStr::getString(){
     return String;
 }
 
-verStr* verStr::setString(std:: string s){
-    String = s;
-    return this;
+std::string verStr::getName(){
+    std::string name;
+    if (String[0] != '"') {
+        std::cerr << "Missing symbol: (\") at position 0: ***"
+            << String << "***" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    for (std::string::size_type i = 1; i < String.length() && String[i] != '"'; i++) name += String[i];
+    return name;
 }
 
 verStr* verStr::strip(){
     std::string pStr;
-    for (std::string::size_type i = 0; i < String.length(); i++){
+    std::string::size_type i = 0;
+    while (i < String.length()){
         switch (String[i]){
-            case 13:
-            case 10:
-            case '\t':
-            case ' ': break;
             case '"': pStr += String[i++];
-            //
             while (String[i] != '"' && i < String.length()) pStr += String[i++];
-            if (i == String.length()){// Guard for: Incorrect Formatting
-                std::cerr << "Corrupted file" << std::endl;
+            if (i == String.length()){
+                std::cerr << "verStr::strip(): File Overran" << std::endl;
                 exit(EXIT_FAILURE);
             }
-            pStr += '"';
+            case '{': case '}': case '=':
+            pStr += String[i++];
             break;
-            //
-            default: pStr += String[i];
+            default: i++;
         }
     }
-    
-    std::cout << pStr << std::endl;
+
     String = pStr;
     return this;
 }
 
 std::string verStr::format(){
     std::string pStr;
+    std::string::size_type i = 0;
     int indent{0};
-    for (std::string::size_type i = 0; i < String.length(); i++){
+    bool gate{false};
+    while(i < String.length()){
         switch (String[i]){
             case '"': pStr += String[i++];
-            //
+            // Handling identifiers
             while (String[i] != '"' && i < String.length()) pStr += String[i++];
-            if (i == String.length()){// Guard for: Incorrect Formatting
-                std::cerr << "Corrupted file 2" << std::endl;
+            if (i == String.length()){
+                std::cerr << "verStr::format(): File Overran" << std::endl;
                 exit(EXIT_FAILURE);
             }
-            pStr += '"'; 
-            break;
-            //
-            case '{': pStr += "{\n";
-            indent++;
-            for (int ctr = 0; ctr < indent; ctr++) pStr += '\t';
-            break;
-            case '}': pStr.pop_back(); pStr += "}\n";
-            indent--;
-            for (int ctr = 0; ctr < indent; ctr++) pStr += '\t';
-            break;
-            case '=': pStr += "=\""; i += 2;
-            //
-            while (String[i] != '"' && i < String.length()) pStr += String[i++];
-            if (i == String.length()){// Guard for: Incorrect Formatting
-                std::cerr << "Corrupted file 3" << std::endl;
-                exit(EXIT_FAILURE);
+            pStr += String[i++];
+            if (gate){
+                pStr += '\n';
+                for (int ctr = 0; ctr < indent; ctr++) pStr += '\t';
+                gate = false;
             }
-            pStr += "\"\n";
+            //
+            break;
+            case '{': pStr += "{\n"; i++; indent++;
             for (int ctr = 0; ctr < indent; ctr++) pStr += '\t';
             break;
-            //
-            default: pStr += String[i];
+            case '}': pStr.pop_back(); pStr += "}\n"; i++; indent--;
+            for (int ctr = 0; ctr < indent; ctr++) pStr += '\t';
+            break;
+            case '=': pStr += String[i++]; gate = true;
+            break;
+            default: i++;
         }
     }
 
-    std::cout << pStr << std::endl;
     return pStr;
 }
 
