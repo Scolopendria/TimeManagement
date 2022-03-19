@@ -70,10 +70,10 @@ std::string verStr::format(){
             //
             break;
             case '{': pStr += "{\n"; i++; indent++;
-            if (indent = 0) return pStr;
             for (int ctr = 0; ctr < indent; ctr++) pStr += '\t';
             break;
             case '}': pStr.pop_back(); pStr += "}\n"; i++; indent--;
+            if (indent == 0) return pStr;
             for (int ctr = 0; ctr < indent; ctr++) pStr += '\t';
             break;
             case '=': pStr += String[i++]; gate = true;
