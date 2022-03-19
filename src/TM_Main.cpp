@@ -1,7 +1,7 @@
 // Main of TM
 
 #include <iostream>
-#include "headers.h"
+#include "Headers.h"
 
 int main(){
     MegaStr mStr;

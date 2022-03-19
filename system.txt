@@ -1,4 +1,4 @@
-"random":{
+"Automatic Time Management":{
 	"Hello":{
 		"World"="Hey"
 		"Yay":{
