@@ -28,6 +28,7 @@ std::string verStr::getName(){
 verStr* verStr::strip(){
     std::string pStr;
     std::string::size_type i = 0;
+    int depth{0};
     while (i < String.length()){
         switch (String[i]){
             case '"': pStr += String[i++];
@@ -36,8 +37,17 @@ verStr* verStr::strip(){
                 std::cerr << "verStr::strip(): File Overran" << std::endl;
                 exit(EXIT_FAILURE);
             }
-            case '{': case '}': case '=':
             pStr += String[i++];
+            break;
+            case '{': depth++; pStr += String[i++];
+            break;
+            case '}': depth--; pStr += String[i++];
+            if (depth == 0){
+                String = pStr;
+                return this;
+            }
+            break;
+            case '=': pStr += String[i++];
             break;
             default: i++;
         }
@@ -50,7 +60,7 @@ verStr* verStr::strip(){
 std::string verStr::format(){
     std::string pStr;
     std::string::size_type i = 0;
-    int indent{0};
+    int depth{0};
     bool gate{false};
     while(i < String.length()){
         switch (String[i]){
@@ -64,17 +74,16 @@ std::string verStr::format(){
             pStr += String[i++];
             if (gate){
                 pStr += '\n';
-                for (int ctr = 0; ctr < indent; ctr++) pStr += '\t';
+                for (int ctr = 0; ctr < depth; ctr++) pStr += '\t';
                 gate = false;
             }
             //
             break;
-            case '{': pStr += "{\n"; i++; indent++;
-            for (int ctr = 0; ctr < indent; ctr++) pStr += '\t';
+            case '{': pStr += "{\n"; i++; depth++;
+            for (int ctr = 0; ctr < depth; ctr++) pStr += '\t';
             break;
-            case '}': pStr.pop_back(); pStr += "}\n"; i++; indent--;
-            if (indent == 0) return pStr;
-            for (int ctr = 0; ctr < indent; ctr++) pStr += '\t';
+            case '}': pStr.pop_back(); pStr += "}\n"; i++; depth--;
+            for (int ctr = 0; ctr < depth; ctr++) pStr += '\t';
             break;
             case '=': pStr += String[i++]; gate = true;
             break;
