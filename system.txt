@@ -1,9 +1,5 @@
 "Automatic Time Management"{
 	"happy"="yolo"
-	"yosei"{
-		"loli"="haha"
-		"lksjdf"{
-			"slkjelk"="jldl"
-		}
-	}
+	"yosei"="kirei"
+	"hello"="world"
 }

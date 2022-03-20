@@ -10,6 +10,10 @@ MegaStr::MegaStr(){
     std::cout << "Created MegaStr Object" << std::endl;
 }
 
+MegaStr::~MegaStr(){
+    putFile();
+}
+
 std::string MegaStr::getFile(){
     std::string pStr{""};
     auto ss = std::ostringstream{};

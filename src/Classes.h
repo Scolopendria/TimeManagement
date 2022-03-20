@@ -3,38 +3,43 @@
 
 #include "Classes.h"
 #include <vector>
+#include <array>
 class verStr{
+    //child support, destruct/back-translate and command interface support still needed
     public:
         verStr(std:: string s);
-        ~verStr(){;};
-        std::string getString(); // to be deprecated
-        std::string format();
+        ~verStr(){};
+        std::string getString();
         std::string getName();
-        std::string getValue(std::string attrName);
+        std::string format();
         std::vector<std::string> listChildren();
         std::vector<std::string> listAttribute();
+        std::string getValue(std::string attrName);
         verStr* child(std::string childName);
-        void setValue(std::string attrName, std::string attrValue);
+        void setAttribute(std::string attrName, std::string attrValue);
+        verStr* createChildren(std::string childName);
+        verStr* createAttribute(std::string identifier[2]);
+        void deleteChildren(std::string childName);
+        void deleteAttribute(std::string attrName);
     private:
-        std::string translate();
+        std::string read(std::string s, std::string::size_type &i);
         verStr* strip();
         verStr* objectify();
-        verStr* createChildren();
-        verStr* createAttribute();
-        verStr* createChildren(std::string childName);
-        verStr* createAttribute(std::string attrName, std::string attrValue);
+        verStr* translate();
         std::string String;
+        std::string Name;
         std::vector<verStr> children;
-        std::vector<std::string> attribute[2];
+        std::vector<std::array<std::string, 2>> attribute;
 };
 
 class MegaStr{
     public:
         MegaStr();
+        ~MegaStr();
         verStr vStr{getFile()};
-        void putFile();
     private:
         std::string getFile();
+        void putFile();
 };
 
 #include "verStr.cpp"
