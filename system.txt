@@ -1,5 +1,14 @@
 "Automatic Time Management"{
-	"happy"="yolo"
-	"yosei"="kirei"
+	"happy"="tralo"
+	"web"{
+		"lalala"="happiness"
+		"kOS"{
+		}
+	}
+	"fisei"="kirei"
 	"hello"="world"
+	"More"{
+		"more!!"{
+		}
+	}
 }
