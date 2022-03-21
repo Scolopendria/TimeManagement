@@ -1,12 +1,12 @@
 "Automatic Time Management"{
 	"happy"="tralo"
+	"fisei"="kirei"
+	"hello"="world"
 	"web"{
 		"lalala"="happiness"
 		"kOS"{
 		}
 	}
-	"fisei"="kirei"
-	"hello"="world"
 	"gogy"{
 		"ablo"{
 			"bubbles"{

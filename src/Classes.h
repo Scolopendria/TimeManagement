@@ -6,16 +6,14 @@
 #include <vector>
 #include <array>
 class verStr{
-    //destruct/back-translate and command interface support still needed
-    // 5 classes: command, view, standard, utilities, initializer
     public:
         // initializer class
         verStr(std:: string s);
         ~verStr();
         // view class
         std::string getName();
-        std::string getString();    //translate support // for parent call
-        std::string format();       //translate support // for user call
+        std::string updString();
+        std::string format();
         std::string get(bool __ATTRIBUTES, bool __CHILDREN);
         std::string get(std::string attrName);
         // command class
@@ -34,7 +32,6 @@ class verStr{
         // initializer class
         verStr* strip();
         verStr* objectify();
-        verStr* translate(); // needs to be defined
         // members
         std::string String;
         std::string Name;

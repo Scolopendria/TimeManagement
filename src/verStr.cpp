@@ -10,12 +10,12 @@
 verStr::verStr(std::string s){
     String = s;
     strip()->objectify();
-    std::cout << get(true, true) << std::endl;;
-    std::cout << "Created " << Name << std::endl;
+    //std::cout << get(true, true) << std::endl;;
+    //std::cout << "Created " << Name << std::endl;
 }
 
 verStr::~verStr(){
-    std::cout << "Destroyed " << Name << std::endl;
+    //std::cout << "Destroyed " << Name << std::endl;
 }
 
 void verStr::throwError(std::string err){
@@ -24,11 +24,6 @@ void verStr::throwError(std::string err){
 }
 
 std::string verStr::read(std::string s, std::string::size_type &i, bool t){
-    // if (String[0] != '"'){ // Guard deactivated beacuse all input will be purified through strip
-    //     std::cerr << "Missing symbol: (\") at position 0: ***"
-    //         << String << "***" << std::endl;
-    //     exit(EXIT_FAILURE);
-    // }
     std::string identifier;
     if (t) identifier += s[i];
     i++;
@@ -45,16 +40,23 @@ std::string verStr::cut(std::string::size_type i[2]){
     return pStr;
 }
 
-std::string verStr::getString(){
+std::string verStr::updString(){
+    auto encapsulate = [](std::string identifier){return std::string{"\"" + identifier + "\""};};
+    String = (encapsulate(Name) + "{");
+    for (auto &ID_pair : attributes) ((String += encapsulate(ID_pair[0])) += "=") += encapsulate(ID_pair[1]);
+    for (auto &c : children){
+        String += c.updString();
+    }
+    String += "}";
     return String;
 }
-
 
 std::string verStr::getName(){
     return Name;
 }
 
 std::string verStr::format(){
+    updString();
     bool gate{false};
     int depth{0};
     std::string pStr;
@@ -108,8 +110,8 @@ std::string verStr::get(std::string attrName){
 
 void verStr::attribute(std::string attrName, std::string attrValue){
     deleteAttribute(attrName);
-    std::string ID_pair[2]{attrName, attrValue};
-    createAttribute(ID_pair);
+    std::string pStr[2]{attrName, attrValue};
+    createAttribute(pStr);
 }
 
 verStr* verStr::child(std::string childName, bool t){

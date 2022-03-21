@@ -7,12 +7,12 @@
 #include <sstream>
 
 MegaStr::MegaStr(){
-    std::cout << "Created MegaStr Object" << std::endl;
+    //std::cout << "Created MegaStr Object" << std::endl;
 }
 
 MegaStr::~MegaStr(){
     putFile();
-    std::cout << "Destroyed MegaStr Object" << std::endl;
+    //std::cout << "Destroyed MegaStr Object" << std::endl;
 }
 
 std::string MegaStr::getFile(){
