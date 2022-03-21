@@ -21,14 +21,14 @@ class verStr{
         verStr* child(std::string childName, bool t);
         void deleteAttribute(std::string attrName);
         void deleteChildren(std::string childName);
-        // standard class
-        verStr* createAttribute(std::string ID_pair[2]);
-        verStr* createChildren(std::string childName);
     private:
         // utilities class
         void throwError(std::string err);
         std::string read(std::string s, std::string::size_type &i, bool t);
         std::string cut(std::string::size_type i[2]);
+        // standard class
+        verStr* createAttribute(std::string ID_pair[2]);
+        verStr* createChildren(std::string childName);
         // initializer class
         verStr* strip();
         verStr* objectify();

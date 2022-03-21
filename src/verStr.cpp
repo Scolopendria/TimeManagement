@@ -40,6 +40,20 @@ std::string verStr::cut(std::string::size_type i[2]){
     return pStr;
 }
 
+verStr* verStr::createChildren(std::string childName){
+    children.push_back(verStr{childName});
+    return this;
+}
+
+verStr* verStr::createAttribute(std::string ID_pair[2]){
+    attributes.push_back({ID_pair[0], ID_pair[1]});
+    return this;
+}
+
+std::string verStr::getName(){
+    return Name;
+}
+
 std::string verStr::updString(){
     auto encapsulate = [](std::string identifier){return std::string{"\"" + identifier + "\""};};
     String = (encapsulate(Name) + "{");
@@ -49,10 +63,6 @@ std::string verStr::updString(){
     }
     String += "}";
     return String;
-}
-
-std::string verStr::getName(){
-    return Name;
 }
 
 std::string verStr::format(){
@@ -115,23 +125,13 @@ void verStr::attribute(std::string attrName, std::string attrValue){
 }
 
 verStr* verStr::child(std::string childName, bool t){
-    for (auto &c : children) if (childName == c.getName()) return &c;
+    for (auto &c : children) if (c.getName() == childName) return &c;
     if (!t){
         std::cout << childName << " does not exist." << std::endl;
         return this;
     }
     createChildren(childName);
     return &children.back();
-}
-
-verStr* verStr::createChildren(std::string childName){
-    children.push_back(verStr{childName});
-    return this;
-}
-
-verStr* verStr::createAttribute(std::string ID_pair[2]){
-    attributes.push_back({ID_pair[0], ID_pair[1]});
-    return this;
 }
 
 void verStr::deleteAttribute(std::string attrName){
