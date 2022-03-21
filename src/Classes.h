@@ -2,35 +2,48 @@
 #define CLASSES_H
 
 #include "Classes.h"
+#include <string>
 #include <vector>
 #include <array>
 class verStr{
     //destruct/back-translate and command interface support still needed
+    // 5 classes: command, view, standard, utilities, initializer
     public:
+        // initializer class
         verStr(std:: string s);
-        ~verStr(){};
-        std::string getString();
-        std::string getName();
-        std::string format();
-        std::vector<std::string> listChildren();                        //
-        std::vector<std::string> listAttribute();                       //
-        std::string getValue(std::string attrName);                     //
-        verStr* child(std::string childName);                           //
-        void setAttribute(std::string attrName, std::string attrValue); //
-        verStr* createChildren(std::string childName);
-        verStr* createAttribute(std::string identifier[2]);
-        void deleteChildren(std::string childName);                     //
-        void deleteAttribute(std::string attrName);                     //
+        ~verStr();
+        // view class
+        //getName
+        //getAllMembers
+        // command class
+        //child
+        //value
+        //delete member
+        // standard class
+        std::string getString(); //translate support                    //view
+        std::string getName();                                          //view
+        std::string format();                                           //view
+        std::string getValue(std::string attrName);                     //view
+        verStr* child(std::string childName);                           //view
+        void setAttribute(std::string attrName, std::string attrValue); //command
+        verStr* createAttribute(std::string identifier[2]);             //command
+        verStr* createChildren(std::string childName);                  //command
+        void deleteAttribute(std::string attrName);                     //command
+        void deleteChildren(std::string childName);                     //command
     private:
-        std::string read(std::string s, std::string::size_type &i);
+        // utilities class
+        void throwError(std::string err);
+        std::string read(std::string s, std::string::size_type &i, bool t);
         std::string cut(std::string::size_type i[2]);
+        // initializer class
         verStr* strip();
         verStr* objectify();
-        verStr* translate();                                            //
+        verStr* translate(); // needs to be defined
+        // members
         std::string String;
         std::string Name;
-        std::vector<verStr> children;
         std::vector<std::array<std::string, 2>> attribute;
+        std::vector<verStr> children;
 };
 
 class MegaStr{

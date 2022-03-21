@@ -3,15 +3,27 @@
 
 #include "Classes.h"
 #include <iostream>
+#include <string>
+#include <vector>
+#include <array>
 
 verStr::verStr(std::string s){
     String = s;
     strip()->objectify();
-    std::cout << "Created verStr Object" << std::endl;
+    std::cout << "Created " << Name << std::endl;
+}
+
+verStr::~verStr(){
+    std::cout << "Destroyed " << Name << std::endl;
 }
 
 std::string verStr::getString(){
     return String;
+}
+
+void verStr::throwError(std::string err){
+    std::cerr << err << std::endl;
+    exit(EXIT_FAILURE);
 }
 
 std::string verStr::getName(){
@@ -25,21 +37,12 @@ std::string verStr::format(){
     bool gate{false};
     while(i < String.length()){
         switch (String[i]){
-            case '"': pStr += String[i++];
-            // Handling identifiers
-            // use read()
-            while (String[i] != '"' && i < String.length()) pStr += String[i++];
-            if (i == String.length()){
-                std::cerr << "verStr::format(): File Overran" << std::endl;
-                exit(EXIT_FAILURE);
-            }
-            pStr += String[i++];
+            case '"': pStr += read(String, i, true);
             if (gate){
                 pStr += '\n';
                 for (int ctr = 0; ctr < depth; ctr++) pStr += '\t';
                 gate = false;
             }
-            //
             break;
             case '{': pStr += "{\n"; i++; depth++;
             for (int ctr = 0; ctr < depth; ctr++) pStr += '\t';
@@ -56,6 +59,22 @@ std::string verStr::format(){
     return pStr;
 }
 
+std::string verStr::getValue(std::string attrName){
+    for (auto &ID_pair : attribute) if (ID_pair[0] == attrName) return ID_pair[1];
+    std::string pStr{attrName + " does not exist."};
+    return pStr;
+}
+
+verStr* verStr::child(std::string childName){
+    for (auto &c : children) if (childName == c.getName()) return &c;
+    std::cout << childName << " does not exist." << std::endl;
+    return this;
+}
+
+void verStr::setAttribute(std::string attrName, std::string attrValue){
+    for (auto &ID_pair : attribute) if (attrName == ID_pair[0]) ID_pair[1] = attrValue;
+    return;
+}
 
 verStr* verStr::createChildren(std::string childName){
     children.push_back(verStr{childName});
@@ -67,20 +86,40 @@ verStr* verStr::createAttribute(std::string ID_pair[2]){
     return this;
 }
 
-std::string verStr::read(std::string s, std::string::size_type &i){
+void verStr::deleteAttribute(std::string attrName){
+    std::vector<std::array<std::string, 2>>::iterator iter{0};
+    for (auto &ID_pair: attribute){
+        if (ID_pair[0] == attrName){
+            attribute.erase(iter);
+        }
+        iter++;
+    }
+    return;
+}
+
+void verStr::deleteChildren(std::string childName){
+    std::vector<verStr>::iterator iter{0};
+    for (auto &c: children){
+        if (c.getName() == childName){
+            children.erase(iter);
+        }
+        iter++;
+    }
+}
+
+std::string verStr::read(std::string s, std::string::size_type &i, bool t){
     // if (String[0] != '"'){ // Guard deactivated beacuse all input will be purified through strip
     //     std::cerr << "Missing symbol: (\") at position 0: ***"
     //         << String << "***" << std::endl;
     //     exit(EXIT_FAILURE);
     // }
     std::string identifier;
+    if (t) identifier += s[i];
     i++;
     while (i < s.length() && s[i] != '"') identifier += s[i++];
+    if (i == String.length()) throwError("verStr::read(): File Overran");
+    if (t) identifier += s[i];
     i++;
-    if (i == String.length()){
-        std::cerr << "verStr::read(): File Overran" << std::endl;
-        exit(EXIT_FAILURE);
-    }
     return identifier;
 }
 
@@ -96,14 +135,7 @@ verStr* verStr::strip(){
     int depth{0};
     while (i < String.length()){
         switch (String[i]){
-            // use read()
-            case '"': pStr += String[i++];
-            while (String[i] != '"' && i < String.length()) pStr += String[i++];
-            if (i == String.length()){
-                std::cerr << "verStr::strip(): File Overran" << std::endl;
-                exit(EXIT_FAILURE);
-            }
-            pStr += String[i++];
+            case '"': pStr += read(String, i, true);
             break;
             case '{': depth++; pStr += String[i++];
             break;
@@ -129,21 +161,21 @@ verStr* verStr::objectify(){
     std::string::size_type i{0}, pincer[2];
     int depth;
     char p;
-    Name = read(String, i);
-    i ++;
+    Name = read(String, i, false);
+    i++;
     
     while (i < (String.length() - 1)){
         pincer[0] = i;
-        ID_pair[0] = read(String, i);
+        ID_pair[0] = read(String, i, false);
         p = String[i++];
         if (p == '='){
-            ID_pair[1] = read(String, i);
+            ID_pair[1] = read(String, i, false);
             createAttribute(ID_pair);
         } else if (p == '{'){
             depth = 1;
             while (i < String.length() && depth != 0){
                 switch (String[i]){
-                    case '"': read(String, i);
+                    case '"': read(String, i, false);
                     break;
                     case '{': depth++; i++;
                     break;
@@ -151,32 +183,15 @@ verStr* verStr::objectify(){
                     break;
                     case '=': i++;
                     break;
-                    default: std::cerr << "Unexpected Character: ("<< String[i] << ")" << std::endl;
-                    exit(EXIT_FAILURE);
+                    default: throwError("verStr::objectify(): Unexpected character: " + String[i]);
                 }
             }
             if (depth == 0){
                 pincer[1] = i;
                 createChildren(cut(pincer));
-            } else if (i == String.length()){
-                std::cerr << "verStr::objectify(): File Overran" << std::endl;
-                exit(EXIT_FAILURE);
-            } else {
-                std::cerr << "verStr::objectify(): Unknown Error" << std::endl;
-                exit(EXIT_FAILURE);
-            }
-        } else {
-            std::cerr << "Unexpected character: (" << p << ")" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    std::cout << Name << std::endl;
-    for (auto &ID_pair : attribute){
-        for (auto &s: ID_pair){
-            std::cout << s << " ";
-        }
-        std::cout << std::endl;
+            } else if (i == String.length()) throwError("verStr::objectify(): File Overran");
+            else throwError("verStr::objectify(): Unknown Error");
+        } else throwError("verStr::objectify(): Unexpected character: " + p);
     }
 
     return this;

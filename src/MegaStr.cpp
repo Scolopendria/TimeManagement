@@ -12,15 +12,15 @@ MegaStr::MegaStr(){
 
 MegaStr::~MegaStr(){
     putFile();
+    std::cout << "Destroyed MegaStr Object" << std::endl;
 }
 
 std::string MegaStr::getFile(){
-    std::string pStr{""};
-    auto ss = std::ostringstream{};
     std::ifstream file("system.txt");
     if (!file.is_open()) return "\"Automatic Time Management\"{}";
+    auto ss = std::ostringstream{};
     ss << file.rdbuf();
-    pStr = ss.str();
+    std::string pStr{ss.str()};
     if (pStr == "") return "\"Automatic Time Management\"{}";
     return pStr;
 }
