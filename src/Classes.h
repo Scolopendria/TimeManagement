@@ -13,23 +13,19 @@ class verStr{
         verStr(std:: string s);
         ~verStr();
         // view class
-        //getName
-        //getAllMembers
+        std::string getName();
+        std::string getString();    //translate support // for parent call
+        std::string format();       //translate support // for user call
+        std::string get(bool __ATTRIBUTES, bool __CHILDREN);
+        std::string get(std::string attrName);
         // command class
-        //child
-        //value
-        //delete member
+        void attribute(std::string attrName, std::string attrValue);
+        verStr* child(std::string childName, bool t);
+        void deleteAttribute(std::string attrName);
+        void deleteChildren(std::string childName);
         // standard class
-        std::string getString(); //translate support                    //view
-        std::string getName();                                          //view
-        std::string format();                                           //view
-        std::string getValue(std::string attrName);                     //view
-        verStr* child(std::string childName);                           //view
-        void setAttribute(std::string attrName, std::string attrValue); //command
-        verStr* createAttribute(std::string identifier[2]);             //command
-        verStr* createChildren(std::string childName);                  //command
-        void deleteAttribute(std::string attrName);                     //command
-        void deleteChildren(std::string childName);                     //command
+        verStr* createAttribute(std::string ID_pair[2]);
+        verStr* createChildren(std::string childName);
     private:
         // utilities class
         void throwError(std::string err);
@@ -42,7 +38,7 @@ class verStr{
         // members
         std::string String;
         std::string Name;
-        std::vector<std::array<std::string, 2>> attribute;
+        std::vector<std::array<std::string, 2>> attributes;
         std::vector<verStr> children;
 };
 
