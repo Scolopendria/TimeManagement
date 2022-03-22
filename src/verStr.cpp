@@ -100,7 +100,7 @@ std::string verStr::get(bool __ATTRIBUTES, bool __CHILDREN){
     std::string pStr{Name + ":\n"};
 
     if (__ATTRIBUTES){
-        pStr += "\n********attributess********\n";
+        pStr += "\n********Attributes********\n";
         for (auto &ID_pair : attributes)(((pStr += ID_pair[0]) += ": ") += ID_pair[1]) += "\n";
     }
 

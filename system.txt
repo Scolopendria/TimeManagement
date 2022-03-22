@@ -1,27 +1,10 @@
 "Automatic Time Management"{
-	"happy"="tralo"
-	"fisei"="kirei"
-	"hello"="world"
-	"web"{
-		"lalala"="happiness"
-		"kOS"{
-		}
-	}
-	"gogy"{
-		"ablo"{
-			"bubbles"{
+	"linilly"{
+		"Goals"{
+			"hello"="world"
+			"piano"{
+				"yui"="happiness"
 			}
-			"jammmy"{
-			}
-		}
-	}
-	"Goals"{
-		"pills"="wikihow"
-		"hello"="world"
-		"one"{
-		}
-		"yui"{
-			"joy"="happiness"
 		}
 	}
 }

@@ -2,7 +2,6 @@
 #define MEGASTR_CPP
 
 #include "Classes.h"
-#include <iostream>
 #include <fstream>
 #include <sstream>
 
@@ -21,8 +20,8 @@ std::string MegaStr::getFile(){
     auto ss = std::ostringstream{};
     ss << file.rdbuf();
     std::string pStr{ss.str()};
-    if (pStr == "") return "\"Automatic Time Management\"{}";
-    return pStr;
+    if (pStr.find_first_not_of(" \t\n\v\r") != std::string::npos) return pStr;
+    return "\"Automatic Time Management\"{}";
 }
 
 void MegaStr::putFile(){

@@ -1,10 +1,10 @@
 #ifndef CLASSES_H
 #define CLASSES_H
 
-#include "Classes.h"
 #include <string>
 #include <vector>
 #include <array>
+
 class verStr{
     public:
         // initializer class
