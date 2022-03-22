@@ -15,4 +15,8 @@
 			}
 		}
 	}
+	"Goals"{
+		"pills"="wikipage"
+		"boi"="hai"
+	}
 }
