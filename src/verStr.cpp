@@ -15,7 +15,7 @@ verStr::verStr(std::string s){
 }
 
 verStr::~verStr(){
-    std::cout << "Destroyed " << Name << std::endl;
+    //std::cout << "Destroyed " << Name << std::endl;
 }
 
 void verStr::throwError(std::string err){
@@ -40,7 +40,7 @@ std::string verStr::cut(std::string::size_type i[2]){
     return pStr;
 }
 
-verStr* verStr::createChildren(std::string childString){
+verStr* verStr::createChild(std::string childString){
     children.push_back(verStr{childString});
     return this;
 }
@@ -97,8 +97,7 @@ std::string verStr::format(){
 }
 
 std::string verStr::get(bool __ATTRIBUTES, bool __CHILDREN){
-    std::string pStr;
-    ((pStr += "\n\n\t") += Name) += "\n";
+    std::string pStr{Name + ":\n"};
 
     if (__ATTRIBUTES){
         pStr += "\n********attributess********\n";
@@ -131,7 +130,7 @@ verStr* verStr::child(std::string childName, bool &t){
         return this;
     }
     std::string childString{"\"" + childName + "\"{}"};
-    createChildren(childString);
+    createChild(childString);
     return &children.back();
 }
 
@@ -147,7 +146,7 @@ void verStr::deleteAttribute(std::string attrName){
     return;
 }
 
-void verStr::deleteChildren(std::string childName){
+void verStr::deleteChild(std::string childName){
     int iter{0};
     for (auto &c: children){
         if (c.getName() == childName){
@@ -218,7 +217,7 @@ verStr* verStr::objectify(){
             }
             if (depth == 0){
                 pincer[1] = i;
-                createChildren(cut(pincer));
+                createChild(cut(pincer));
             } else if (i == String.length()) throwError("verStr::objectify(): File Overran");
             else throwError("verStr::objectify(): Unknown Error");
         } else throwError("verStr::objectify(): Unexpected character: " + p);

@@ -16,7 +16,12 @@
 		}
 	}
 	"Goals"{
-		"pills"="wikipage"
-		"boi"="hai"
+		"pills"="wikihow"
+		"hello"="world"
+		"one"{
+		}
+		"yui"{
+			"joy"="happiness"
+		}
 	}
 }

@@ -20,7 +20,7 @@ class verStr{
         void attribute(std::string attrName, std::string attrValue);
         verStr* child(std::string childName, bool &t);
         void deleteAttribute(std::string attrName);
-        void deleteChildren(std::string childName);
+        void deleteChild(std::string childName);
     private:
         // utilities class
         void throwError(std::string err);
@@ -28,7 +28,7 @@ class verStr{
         std::string cut(std::string::size_type i[2]);
         // standard class
         verStr* createAttribute(std::string ID_pair[2]);
-        verStr* createChildren(std::string childString);
+        verStr* createChild(std::string childString);
         // initializer class
         verStr* strip();
         verStr* objectify();

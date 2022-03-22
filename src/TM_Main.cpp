@@ -51,10 +51,10 @@ int main(){
                 path.back()->deleteAttribute(pStr2);
             } else if (pStr1 == "child"){
                 std::cin >> pStr2;
-                path.back()->deleteChildren(pStr2);
+                path.back()->deleteChild(pStr2);
             } else std::cout << "Invalid type" << std::endl;
-        } else if (pStr1 == "!help"){
-            std::cout << "Go read the source code." << std::endl;
-        } else std::cout << "Command does not exist. !help for more." << std::endl;
+        } else if (pStr1 == "!view") std::cout << path.back()->get(true, true) << std::endl;
+        else if (pStr1 == "!help") std::cout << "Go read the source code." << std::endl;
+        else std::cout << "Command does not exist. !help for more." << std::endl;
     }
 }
