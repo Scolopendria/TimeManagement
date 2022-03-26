@@ -11,7 +11,7 @@ int main(){
     }
     
     handleUser(&mStr);
-    //schedule()
+    scheduler(&mStr);
 
     return 0;
 }

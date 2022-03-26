@@ -58,9 +58,7 @@ std::string verStr::updString(){
     auto encapsulate = [](std::string identifier){return std::string{"\"" + identifier + "\""};};
     String = (encapsulate(Name) + "{");
     for (auto &ID_pair : attributes) ((String += encapsulate(ID_pair[0])) += "=") += encapsulate(ID_pair[1]);
-    for (auto &c : children){
-        String += c.updString();
-    }
+    for (auto &c : children)  String += c.updString();
     String += "}";
     return String;
 }
@@ -114,9 +112,16 @@ std::string verStr::get(bool __ATTRIBUTES, bool __CHILDREN){
 
 std::string verStr::get(std::string attrName){
     for (auto &ID_pair : attributes) if (ID_pair[0] == attrName) return ID_pair[1];
-    return std::string{attrName + " does not exist."};
+    return std::string{"NULL"};
 }
 
+std::vector<verStr>* verStr::getChildrenList(){
+    return &children;
+}
+
+std::vector<std::array<std::string, 2>> verStr::getAttributesList(){
+    return attributes;
+}
 void verStr::attribute(std::string attrName, std::string attrValue){
     deleteAttribute(attrName);
     std::string pStr[2]{attrName, attrValue};
@@ -135,10 +140,10 @@ verStr* verStr::child(std::string childName, bool &t){
 }
 
 void verStr::deleteAttribute(std::string attrName){
-    int iter{0};
+    auto iter = attributes.begin();
     for (auto &ID_pair: attributes){
         if (ID_pair[0] == attrName){
-            attributes.erase((attributes.begin()+iter));
+            attributes.erase(iter);
             return;
         }
         iter++;
@@ -147,10 +152,10 @@ void verStr::deleteAttribute(std::string attrName){
 }
 
 void verStr::deleteChild(std::string childName){
-    int iter{0};
+    auto iter = children.begin();
     for (auto &c: children){
         if (c.getName() == childName){
-            children.erase((children.begin()+iter));
+            children.erase(iter);
             return;
         }
         iter++;
