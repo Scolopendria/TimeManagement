@@ -63,31 +63,34 @@ void schedule(
     std::vector<std::array<std::string, 2>> cascadeAttributes
 ){
     // cascadeAttributes = off, rescheduling = off, "proper classing and automatic declarations" = off
-    int startSearchTime = caltime.minute_t;
-    auto bookedTime{schedulePath->getAttributesList()};
+    int startSearchTime{caltime.minute_t}, tail{0};
     std::size_t iter{0};
     std::stringstream ss;
+    auto bookedTime{schedulePath->getAttributesList()};
     if (vStr->get("time") == "NULL") vStr->attribute("time", "30");
 
     if (vStr->get("class") == "task" || vStr->get("class") == "NULL"){
-        while (iter < bookedTime.size()){
-            if (startSearchTime <= endTime(bookedTime[iter][0])){
-                if (startSearchTime >= startTime(bookedTime[iter][0])) startSearchTime = endTime(bookedTime[iter][0]) + 1;
-                if (startSearchTime + std::stoi(vStr->get("time")) < startTime(bookedTime[iter + 1][0])){
+        while (true){
+            if (iter == bookedTime.size()){
+                    if (startSearchTime + std::stoi(vStr->get("time")) < 1440){
+                        ss << startSearchTime << "-" << startSearchTime + std::stoi(vStr->get("time"));
+                        schedulePath->attribute(ss.str(), vStr->getName());
+                        std::cout << "Successful scheduling." << std::endl;
+                    } else std::cout << "Unable to schedule." << std::endl;
+                    break;
+            }
+
+            if (startSearchTime > tail && startSearchTime < startTime(bookedTime[iter][0])){
+                if (startSearchTime + std::stoi(vStr->get("time")) < startTime(bookedTime[iter][0])){
                     ss << startSearchTime << "-" << startSearchTime + std::stoi(vStr->get("time"));
                     schedulePath->attribute(ss.str(), vStr->getName());
                     std::cout << "Successful scheduling." << std::endl;
-                    break;
-                } else startSearchTime = endTime(bookedTime[iter + 1][0]);
+                } else startSearchTime = endTime(bookedTime[iter][0]);
             }
+            if (startSearchTime >= startTime(bookedTime[iter][0]) && startSearchTime <= endTime(bookedTime[iter][0]))
+                startSearchTime = endTime(bookedTime[iter][0]) + 1;
+            tail = endTime(bookedTime[iter][0]);
             iter++;
-        }
-        if (iter == bookedTime.size()){
-            if (startSearchTime + std::stoi(vStr->get("time")) < 1440){
-                ss << startSearchTime << "-" << startSearchTime + std::stoi(vStr->get("time"));
-                schedulePath->attribute(ss.str(), vStr->getName());
-                std::cout << "Successful scheduling." << std::endl;
-            } else std::cout << "Unable to schedule." << std::endl;
         }
     }
 
@@ -100,16 +103,13 @@ int startTime(std::string bookedString){
     std::string::size_type i{0};
     std::stringstream ss;
     while (bookedString[i] != '-') i++;
-    bookedString.substr(0, i);
-    return std::stoi(bookedString);
+    return std::stoi(bookedString.substr(0, i));
 }
 
 int endTime(std::string bookedString){
     std::string::size_type i{0};
     while (bookedString[i] != '-') i++;
-    i++;
-    bookedString.substr(i, bookedString.length()-i);
-    return std::stoi(bookedString);
+    return std::stoi(bookedString.substr(++i));
 }
 
 // std::sort(v.begin(), v.end(), [](auto &left, auto &right) {
