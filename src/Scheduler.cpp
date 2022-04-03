@@ -4,6 +4,7 @@
 #include "Classes.h"
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <chrono>
 
 class Calendar{
@@ -40,6 +41,7 @@ void schedule(
 );
 int startTime(std::string bookedString);
 int endTime(std::string bookedString);
+//void print(std::vector<std::array<std::string, 2>> const &a);
 
 void scheduler(MegaStr *mStr){
     bool ctr{false};
@@ -48,11 +50,15 @@ void scheduler(MegaStr *mStr){
     
     for (int i{0}; i < 14; i++){
         caltime.init(i);
-        for (auto &c : *mStr->vStr.getChildrenList())
-            schedule(c.child("Goals", ctr), c.child("Schedule", ctr)->child(caltime.strDate, ctr), caltime, cascadeAttributes);
+        for (auto &c : *mStr->vStr.getChildrenList()){
+            schedule(c.child("Goals", ctr),
+            c.child("Schedule", ctr)->child(caltime.strDate, ctr),
+            caltime,
+            cascadeAttributes);
+        }
     }
     
-    std::cout << mStr->vStr.format() << std::endl;
+    //std::cout << mStr->vStr.format() << std::endl;
     return;
 }
 
@@ -66,32 +72,34 @@ void schedule(
     int startSearchTime{caltime.minute_t}, tail{0};
     std::size_t iter{0};
     std::stringstream ss;
-    auto bookedTime{schedulePath->getAttributesList()};
+    auto bookedTime{schedulePath->sortAttributes()->getAttributesList()};
     if (vStr->get("time") == "NULL") vStr->attribute("time", "30");
 
-    if (vStr->get("class") == "task" || vStr->get("class") == "NULL"){
-        while (true){
-            if (iter == bookedTime.size()){
-                    if (startSearchTime + std::stoi(vStr->get("time")) < 1440){
-                        ss << startSearchTime << "-" << startSearchTime + std::stoi(vStr->get("time"));
-                        schedulePath->attribute(ss.str(), vStr->getName());
-                        std::cout << "Successful scheduling." << std::endl;
-                    } else std::cout << "Unable to schedule." << std::endl;
-                    break;
-            }
-
-            if (startSearchTime > tail && startSearchTime < startTime(bookedTime[iter][0])){
-                if (startSearchTime + std::stoi(vStr->get("time")) < startTime(bookedTime[iter][0])){
-                    ss << startSearchTime << "-" << startSearchTime + std::stoi(vStr->get("time"));
-                    schedulePath->attribute(ss.str(), vStr->getName());
-                    std::cout << "Successful scheduling." << std::endl;
-                } else startSearchTime = endTime(bookedTime[iter][0]);
-            }
-            if (startSearchTime >= startTime(bookedTime[iter][0]) && startSearchTime <= endTime(bookedTime[iter][0]))
-                startSearchTime = endTime(bookedTime[iter][0]) + 1;
-            tail = endTime(bookedTime[iter][0]);
-            iter++;
+    while (true){
+        if (iter == bookedTime.size()){
+            if (startSearchTime + std::stoi(vStr->get("time")) < 1440){
+                ss << startSearchTime << "-" << startSearchTime + std::stoi(vStr->get("time"));
+                schedulePath->attribute(ss.str(), vStr->getName());
+                std::cout << "Successful scheduling." << std::endl;
+            } else std::cout << "Unable to schedule." << std::endl;
+            break;
         }
+
+        if (startSearchTime > tail && startSearchTime < startTime(bookedTime[iter][0])){
+            if (startSearchTime + std::stoi(vStr->get("time")) < startTime(bookedTime[iter][0])){
+                ss << startSearchTime << "-" << startSearchTime + std::stoi(vStr->get("time"));
+                schedulePath->attribute(ss.str(), vStr->getName());
+                std::cout << "Successful scheduling." << std::endl;
+            } else startSearchTime = endTime(bookedTime[iter][0]);
+        }
+        
+        if (
+            startSearchTime >= startTime(bookedTime[iter][0]) &&
+            startSearchTime <= endTime(bookedTime[iter][0])
+        ) startSearchTime = endTime(bookedTime[iter][0]) + 1;
+        
+        tail = endTime(bookedTime[iter][0]);
+        iter++;
     }
 
     for (auto &c : *vStr->getChildrenList()) schedule(&c, schedulePath, caltime, cascadeAttributes);
@@ -101,7 +109,6 @@ void schedule(
 
 int startTime(std::string bookedString){
     std::string::size_type i{0};
-    std::stringstream ss;
     while (bookedString[i] != '-') i++;
     return std::stoi(bookedString.substr(0, i));
 }
@@ -112,9 +119,9 @@ int endTime(std::string bookedString){
     return std::stoi(bookedString.substr(++i));
 }
 
-// std::sort(v.begin(), v.end(), [](auto &left, auto &right) {
-//     return left.second < right.second;
-// });
-
+// void print(std::vector <std::array<std::string, 2>> const &a){
+//    std::cout << "The vector elements are : ";
+//    for(int i=0; i < a.size(); i++) std::cout << startTime(a[i][0]) << ' ';
+// }
 
 #endif

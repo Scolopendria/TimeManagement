@@ -123,17 +123,15 @@ std::vector<std::array<std::string, 2>> verStr::getAttributesList(){
     return attributes;
 }
 void verStr::attribute(std::string attrName, std::string attrValue){
-    deleteAttribute(attrName);
     std::string pStr[2]{attrName, attrValue};
+    deleteAttribute(attrName);
     createAttribute(pStr);
 }
 
 verStr* verStr::child(std::string childName, bool &t){
     for (auto &c : children) if (c.getName() == childName) return &c;
-    if (t){
-        t = false;
-        return this;
-    }
+    if (t){t = false; return this;}
+
     std::string childString{"\"" + childName + "\"{}"};
     createChild(childString);
     return &children.back();
@@ -161,6 +159,21 @@ void verStr::deleteChild(std::string childName){
         iter++;
     }
     return;
+}
+
+verStr* verStr::sortAttributes(){
+    std::sort(attributes.begin(), attributes.end(),
+        [](const std::array<std::string, 2> &a, const std::array<std::string, 2> &b){
+            auto startTime = [](std::string bookedString){
+                std::string::size_type i{0};
+                while (bookedString[i] != '-') i++;
+                return std::stoi(bookedString.substr(0, i));
+            };
+            return (startTime(a[0]) < startTime(b[0]));
+        }
+    );
+
+    return this;
 }
 
 verStr* verStr::strip(){

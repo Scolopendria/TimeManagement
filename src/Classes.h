@@ -39,6 +39,8 @@ class verStr{
         verStr* child(std::string childName, bool &t);
         void deleteAttribute(std::string attrName);
         void deleteChild(std::string childName);
+        //internal command class
+        verStr* sortAttributes();
 };
 
 class MegaStr{
