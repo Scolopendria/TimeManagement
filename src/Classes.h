@@ -53,7 +53,28 @@ class MegaStr{
         verStr vStr{getFile()};
 };
 
+class Calendar{
+    public:
+        void init(int offset);
+        int year;
+        int month;
+        int date;
+        int weekday;
+        int minute_t;
+        std::string strDate;
+};
+
+class scheduleProgress{
+    public:
+        scheduleProgress(std::string fullpath);
+        int timeLeft{30};
+        std::string fpath{""};
+        std::string name{""};
+        std::string path{""};
+};
+
 #include "VerStr.cpp"
 #include "MegaStr.cpp"
+#include "SchedClasses.cpp"
 
 #endif

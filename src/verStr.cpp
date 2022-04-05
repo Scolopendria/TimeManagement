@@ -146,7 +146,6 @@ void verStr::deleteAttribute(std::string attrName){
         }
         iter++;
     }
-    return;
 }
 
 void verStr::deleteChild(std::string childName){
@@ -158,7 +157,6 @@ void verStr::deleteChild(std::string childName){
         }
         iter++;
     }
-    return;
 }
 
 verStr* verStr::sortAttributes(){

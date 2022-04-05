@@ -1,106 +1,65 @@
 "Automatic Time Management"{
 	"yui"{
 		"Goals"{
-			"time"="30"
+			"piano"{
+			}
 		}
 		"Schedule"{
-			"2022:4:3"{
-				"773-803"="Goals"
-				"804-834"="Goals"
-				"835-865"="Goals"
-				"866-896"="Goals"
-				"897-927"="Goals"
-			}
 			"2022:4:4"{
-				"0-30"="Goals"
-				"31-61"="Goals"
-				"62-92"="Goals"
-				"93-123"="Goals"
-				"124-154"="Goals"
+				"1210-1240"="Goals"
+				"1241-1271"="Goals:piano"
 			}
 			"2022:4:5"{
 				"0-30"="Goals"
-				"31-61"="Goals"
-				"62-92"="Goals"
-				"93-123"="Goals"
-				"124-154"="Goals"
+				"31-61"="Goals:piano"
 			}
 			"2022:4:6"{
 				"0-30"="Goals"
-				"31-61"="Goals"
-				"62-92"="Goals"
-				"93-123"="Goals"
-				"124-154"="Goals"
+				"31-61"="Goals:piano"
 			}
 			"2022:4:7"{
 				"0-30"="Goals"
-				"31-61"="Goals"
-				"62-92"="Goals"
-				"93-123"="Goals"
-				"124-154"="Goals"
+				"31-61"="Goals:piano"
 			}
 			"2022:4:8"{
 				"0-30"="Goals"
-				"31-61"="Goals"
-				"62-92"="Goals"
-				"93-123"="Goals"
-				"124-154"="Goals"
+				"31-61"="Goals:piano"
 			}
 			"2022:4:9"{
 				"0-30"="Goals"
-				"31-61"="Goals"
-				"62-92"="Goals"
-				"93-123"="Goals"
-				"124-154"="Goals"
+				"31-61"="Goals:piano"
 			}
 			"2022:4:10"{
 				"0-30"="Goals"
-				"31-61"="Goals"
-				"62-92"="Goals"
-				"93-123"="Goals"
-				"124-154"="Goals"
+				"31-61"="Goals:piano"
 			}
 			"2022:4:11"{
 				"0-30"="Goals"
-				"31-61"="Goals"
-				"62-92"="Goals"
-				"93-123"="Goals"
-				"124-154"="Goals"
+				"31-61"="Goals:piano"
 			}
 			"2022:4:12"{
 				"0-30"="Goals"
-				"31-61"="Goals"
-				"62-92"="Goals"
-				"93-123"="Goals"
-				"124-154"="Goals"
+				"31-61"="Goals:piano"
 			}
 			"2022:4:13"{
 				"0-30"="Goals"
-				"31-61"="Goals"
-				"62-92"="Goals"
-				"93-123"="Goals"
-				"124-154"="Goals"
+				"31-61"="Goals:piano"
 			}
 			"2022:4:14"{
 				"0-30"="Goals"
-				"31-61"="Goals"
-				"62-92"="Goals"
-				"93-123"="Goals"
-				"124-154"="Goals"
+				"31-61"="Goals:piano"
 			}
 			"2022:4:15"{
 				"0-30"="Goals"
-				"31-61"="Goals"
-				"62-92"="Goals"
-				"93-123"="Goals"
-				"124-154"="Goals"
+				"31-61"="Goals:piano"
 			}
 			"2022:4:16"{
 				"0-30"="Goals"
-				"31-61"="Goals"
-				"62-92"="Goals"
-				"93-123"="Goals"
-				"124-154"="Goals"
+				"31-61"="Goals:piano"
+			}
+			"2022:4:17"{
+				"0-30"="Goals"
+				"31-61"="Goals:piano"
 			}
 		}
 	}
