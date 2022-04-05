@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+// conversions between minute_t to/from hh::mm not yet implemented
 
 int startTime(std::string bookedString);
 int endTime(std::string bookedString);
@@ -55,17 +56,20 @@ void schedule(
         std::vector<std::array<std::string, 2>>{}
     );
 
+    // Wipe unwanted scheduled tasks
     while(!itemList.empty()){
         for (auto &item: itemList){
+            std::cout << sPath->format() << std::endl;
             startSearchTime = caltime.minute_t;
             tail = 0;
             iter = 0;
             bookedTime = sPath->sortAttributes()->getAttributesList();
 
-            // condition checks..
             while (true){
+                // condition checks.. behaviour and dependancies
                 if (iter == bookedTime.size()){
                     if (startSearchTime + item.timeLeft < 1440){
+                        ss.str("");
                         ss << startSearchTime << "-" << startSearchTime + item.timeLeft;
                         sPath->attribute(ss.str(), item.fpath);
                         std::cout << "Successful scheduling." << std::endl;
@@ -75,6 +79,7 @@ void schedule(
 
                 if (startSearchTime > tail && startSearchTime < startTime(bookedTime[iter][0])){
                     if (startSearchTime + item.timeLeft < startTime(bookedTime[iter][0])){
+                        ss.str("");
                         ss << startSearchTime << "-" << startSearchTime + item.timeLeft;
                         sPath->attribute(ss.str(), item.fpath);
                         std::cout << "Successful scheduling." << std::endl;
@@ -114,6 +119,9 @@ std::vector<scheduleProgress> scheduleProgressCheck(
     std::vector<scheduleProgress> itemList, pList;
     if (vStr->get("time") != "NULL") pItem.timeLeft = std::stoi(vStr->get("time"));   // assign time to stated value
 
+    // condition checks.. figure whether to schedule task for given date
+    
+    // schedule progress (time) calculations
     auto attributes{sPath->getAttributesList()};
     for (auto a : attributes){
         if (a[1] == fullpath){
@@ -122,8 +130,8 @@ std::vector<scheduleProgress> scheduleProgressCheck(
             else pItem.timeLeft = pItem.timeLeft + startTime(a[0]) - endTime(a[0]);
         }
     }
-    if (pItem.timeLeft) itemList.push_back(pItem);
     
+    if (pItem.timeLeft) itemList.push_back(pItem);
     for (auto &c : *vStr->getChildrenList()){
         pList = scheduleProgressCheck(&c, sPath, caltime, fullpath, cascadeAttributes);
         itemList.insert(itemList.end(), pList.begin(), pList.end());

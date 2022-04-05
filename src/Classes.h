@@ -69,8 +69,8 @@ class scheduleProgress{
         scheduleProgress(std::string fullpath);
         int timeLeft{30};
         std::string fpath{""};
-        std::string name{""};
-        std::string path{""};
+        //std::string name{""};
+        //std::string path{""};
 };
 
 #include "VerStr.cpp"
