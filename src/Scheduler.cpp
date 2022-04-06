@@ -59,7 +59,6 @@ void schedule(
     // Wipe unwanted scheduled tasks
     while(!itemList.empty()){
         for (auto &item: itemList){
-            std::cout << sPath->format() << std::endl;
             startSearchTime = caltime.minute_t;
             tail = 0;
             iter = 0;
@@ -149,7 +148,7 @@ int startTime(std::string bookedString){
 int endTime(std::string bookedString){
     std::string::size_type i{0};
     while (bookedString[i] != '-') i++;
-    return std::stoi(bookedString.substr(++i));
+    return std::stoi(bookedString.substr(i + 1));
 }
 
 // void print(std::vector <std::array<std::string, 2>> const &a){

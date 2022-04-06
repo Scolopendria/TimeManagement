@@ -5,29 +5,23 @@
 #include <fstream>
 #include <sstream>
 
-MegaStr::MegaStr(){
-    //std::cout << "Created MegaStr Object" << std::endl;
-}
-
 MegaStr::~MegaStr(){
-    putFile();
-    //std::cout << "Destroyed MegaStr Object" << std::endl;
+    std::ofstream file("system.txt");
+    file << vStr.format();
+    file.close();
 }
 
 std::string MegaStr::getFile(){
     std::ifstream file("system.txt");
     if (!file.is_open()) return "\"Automatic Time Management\"{}";
-    auto ss = std::ostringstream{};
+
+    std::ostringstream ss;
     ss << file.rdbuf();
     std::string pStr{ss.str()};
+    file.close();
+
     if (pStr.find_first_not_of(" \t\n\v\r") != std::string::npos) return pStr;
     return "\"Automatic Time Management\"{}";
-}
-
-void MegaStr::putFile(){
-    std::ofstream file("system.txt");
-    file << vStr.format();
-    file.close();
 }
 
 #endif

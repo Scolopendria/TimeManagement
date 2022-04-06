@@ -7,15 +7,16 @@
 #include <vector>
 #include <array>
 
-verStr::verStr(std::string s){
+verStr::verStr(std::string s, verStr* parentNode){
+    parent = parentNode;
     String = s;
     strip()->objectify();
-    //std::cout << get(true, true) << std::endl;;
-    //std::cout << "Created " << Name << std::endl;
 }
 
-verStr::~verStr(){
-    //std::cout << "Destroyed " << Name << std::endl;
+verStr::verStr(std::string s){
+    parent = this;
+    String = s;
+    strip()->objectify();
 }
 
 void verStr::throwError(std::string err){
@@ -49,6 +50,7 @@ verStr* verStr::createAttribute(std::string ID_pair[2]){
     attributes.push_back({ID_pair[0], ID_pair[1]});
     return this;
 }
+
 
 std::string verStr::getName(){
     return Name;
@@ -122,6 +124,11 @@ std::vector<verStr>* verStr::getChildrenList(){
 std::vector<std::array<std::string, 2>> verStr::getAttributesList(){
     return attributes;
 }
+
+verStr* verStr::getParent(){
+    return parent;
+}
+
 void verStr::attribute(std::string attrName, std::string attrValue){
     std::string pStr[2]{attrName, attrValue};
     deleteAttribute(attrName);

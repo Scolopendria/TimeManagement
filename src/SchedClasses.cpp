@@ -23,12 +23,12 @@ void Calendar::init(int offset){
 
 scheduleProgress::scheduleProgress(std::string fullpath){
     fpath = fullpath;
-    //name = fullpath;
+    name = fullpath;
     std::string::size_type i{fullpath.length()-1};
     while (i != std::string::npos){
         if (fullpath[i] == ':'){
-            //name = fullpath.substr(i + 1);
-            //path = fullpath.substr(0, i);
+            name = fullpath.substr(i + 1);
+            path = fullpath.substr(0, i);
             break;
         }
         i--;

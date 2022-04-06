@@ -22,18 +22,15 @@ class verStr{
         std::string Name;
         std::vector<verStr> children;
         std::vector<std::array<std::string, 2>> attributes;
+        verStr* parent;
     public:
-        // initializer class
         verStr(std:: string s);
-        ~verStr();
+        verStr(std:: string s, verStr* parentNode);
         // view class
         std::string getName();
-        std::string updString();
         std::string format();
         std::string get(bool __ATTRIBUTES, bool __CHILDREN);
         std::string get(std::string attrName);
-        std::vector<std::array<std::string, 2>> getAttributesList();
-        std::vector<verStr>* getChildrenList();
         // command class
         void attribute(std::string attrName, std::string attrValue);
         verStr* child(std::string childName, bool &t);
@@ -41,14 +38,16 @@ class verStr{
         void deleteChild(std::string childName);
         //internal command class
         verStr* sortAttributes();
+        std::string updString();
+        std::vector<std::array<std::string, 2>> getAttributesList();
+        std::vector<verStr>* getChildrenList();
+        verStr* getParent();
 };
 
 class MegaStr{
     private:
         std::string getFile();
-        void putFile();
     public:
-        MegaStr();
         ~MegaStr();
         verStr vStr{getFile()};
 };
@@ -65,12 +64,13 @@ class Calendar{
 };
 
 class scheduleProgress{
+    private:
+        std::string name;
+        std::string path;
     public:
         scheduleProgress(std::string fullpath);
         int timeLeft{30};
         std::string fpath{""};
-        //std::string name{""};
-        //std::string path{""};
 };
 
 #include "VerStr.cpp"
