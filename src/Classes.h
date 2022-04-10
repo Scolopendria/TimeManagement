@@ -65,12 +65,26 @@ class Calendar{
 
 class scheduleProgress{
     private:
-        std::string name;
-        std::string path;
+        std::string name; // deprecate
+        std::string path; // deprecate
     public:
         scheduleProgress(std::string fullpath);
         int timeLeft{30};
         std::string fpath{""};
+};
+
+class task{
+    private:
+        int startTime;
+        int endTime;
+        std::string name;
+        std::string stdTime;
+    public:
+        task(std::string taskName, int start, int end);
+        std::string getName();
+        std::string getFullStdTime(); // deprecate
+        int getStart();
+        int getEnd();
 };
 
 #include "VerStr.cpp"

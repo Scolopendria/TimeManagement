@@ -35,4 +35,30 @@ scheduleProgress::scheduleProgress(std::string fullpath){
     }
 }
 
+task::task(std::string taskName, int start, int end){
+    std::stringstream ss;
+
+    name = taskName;
+    startTime = start;
+    endTime = end;
+
+    ss << startTime / 60 << ":" << startTime % 60 << "-" << endTime / 60 << ":" << endTime % 60;
+    stdTime = ss.str();
+}
+
+std::string task::getName(){
+    return name;
+}
+
+std::string task::getFullStdTime(){
+    return stdTime;
+}
+int task::getStart(){
+    return startTime;
+}
+
+int task::getEnd(){
+    return endTime;
+}
+
 #endif

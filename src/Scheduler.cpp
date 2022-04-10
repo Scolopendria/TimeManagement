@@ -5,10 +5,9 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-// conversions between minute_t to/from hh::mm not yet implemented
 
-int startTime(std::string bookedString);
-int endTime(std::string bookedString);
+std::vector<task> initAttributes(std::vector<std::array<std::string, 2>> Attributes);
+std::string stdTimeRep(int timeRep);
 void scheduler(MegaStr *mStr);
 void schedule(
     verStr *gRoot,
@@ -46,8 +45,6 @@ void schedule(
     // cascadeAttributes = off, rescheduling = off, "proper classing and automatic declarations" = off
     int startSearchTime, tail;
     std::size_t iter;
-    std::stringstream ss;
-    std::vector<std::array<std::string, 2>> bookedTime;
     auto itemList = scheduleProgressCheck(
         gRoot,
         sPath,
@@ -62,35 +59,37 @@ void schedule(
             startSearchTime = caltime.minute_t;
             tail = 0;
             iter = 0;
-            bookedTime = sPath->sortAttributes()->getAttributesList();
+            auto scheduleBook{initAttributes(sPath->sortAttributes()->getAttributesList())};
 
             while (true){
                 // condition checks.. behaviour and dependancies
-                if (iter == bookedTime.size()){
+                if (iter == scheduleBook.size()){
                     if (startSearchTime + item.timeLeft < 1440){
-                        ss.str("");
-                        ss << startSearchTime << "-" << startSearchTime + item.timeLeft;
-                        sPath->attribute(ss.str(), item.fpath);
+                        sPath->attribute(
+                            stdTimeRep(startSearchTime) + "-" + stdTimeRep(startSearchTime + item.timeLeft),
+                            item.fpath
+                        );
                         std::cout << "Successful scheduling." << std::endl;
                     } else std::cout << "Unable to schedule." << std::endl;
                     break;
                 }
-
-                if (startSearchTime > tail && startSearchTime < startTime(bookedTime[iter][0])){
-                    if (startSearchTime + item.timeLeft < startTime(bookedTime[iter][0])){
-                        ss.str("");
-                        ss << startSearchTime << "-" << startSearchTime + item.timeLeft;
-                        sPath->attribute(ss.str(), item.fpath);
+                
+                if (startSearchTime > tail && startSearchTime < scheduleBook[iter].getStart()){
+                    if (startSearchTime + item.timeLeft < scheduleBook[iter].getStart()){
+                        sPath->attribute(
+                            stdTimeRep(startSearchTime) + "-" + stdTimeRep(startSearchTime + item.timeLeft),
+                            item.fpath
+                        );
                         std::cout << "Successful scheduling." << std::endl;
-                    } else startSearchTime = endTime(bookedTime[iter][0]);
+                    } else startSearchTime = scheduleBook[iter].getEnd();
                 }
                 
                 if (
-                    startSearchTime >= startTime(bookedTime[iter][0]) &&
-                    startSearchTime <= endTime(bookedTime[iter][0])
-                ) startSearchTime = endTime(bookedTime[iter][0]) + 1;
+                    startSearchTime >= scheduleBook[iter].getStart() &&
+                    startSearchTime <= scheduleBook[iter].getEnd()
+                ) startSearchTime = scheduleBook[iter].getEnd() + 1;
                 
-                tail = endTime(bookedTime[iter][0]);
+                tail = scheduleBook[iter].getEnd();
                 iter++;
             }
         }
@@ -116,17 +115,17 @@ std::vector<scheduleProgress> scheduleProgressCheck(
     fullpath += vStr->getName();
     scheduleProgress pItem{fullpath};
     std::vector<scheduleProgress> itemList, pList;
-    if (vStr->get("time") != "NULL") pItem.timeLeft = std::stoi(vStr->get("time"));   // assign time to stated value
-
+    if (vStr->get("time") != "NULL") pItem.timeLeft = std::stoi(vStr->get("time"));
+    // assign time to stated value
     // condition checks.. figure whether to schedule task for given date
     
     // schedule progress (time) calculations
-    auto attributes{sPath->getAttributesList()};
-    for (auto a : attributes){
-        if (a[1] == fullpath){
-            if (pItem.timeLeft + startTime(a[0]) - endTime(a[0]) < 0)
-                sPath->deleteAttribute(a[0]);
-            else pItem.timeLeft = pItem.timeLeft + startTime(a[0]) - endTime(a[0]);
+    auto scheduleBook{initAttributes(sPath->sortAttributes()->getAttributesList())};
+    for (auto t : scheduleBook){
+        if (t.getName() == fullpath){
+            if (pItem.timeLeft + t.getStart() - t.getEnd() < 0)
+                sPath->deleteAttribute(t.getFullStdTime());
+            else pItem.timeLeft = pItem.timeLeft + t.getStart() - t.getEnd();
         }
     }
     
@@ -139,16 +138,29 @@ std::vector<scheduleProgress> scheduleProgressCheck(
     return itemList;
 }
 
-int startTime(std::string bookedString){
-    std::string::size_type i{0};
-    while (bookedString[i] != '-') i++;
-    return std::stoi(bookedString.substr(0, i));
+std::vector<task> initAttributes(std::vector<std::array<std::string, 2>> Attributes){
+    std::vector<task> scheduleBook;
+    auto minuteTimeRep = [](std::string timeRep){
+        std::string::size_type iter{0};
+        while (timeRep[iter] != ':') iter++;
+        return std::stoi(timeRep.substr(0, iter)) * 60 + std::stoi(timeRep.substr(iter + 1));
+    };
+
+    for (auto &ID_pair : Attributes){
+        std::string::size_type i{0};
+        while (ID_pair[0][i] != '-') i++;
+        const int start{minuteTimeRep(ID_pair[0].substr(0, i))};
+        const int end{minuteTimeRep(ID_pair[0].substr(i + 1))};
+        scheduleBook.push_back(task{ID_pair[1], start, end});
+    }
+    
+    return scheduleBook;
 }
 
-int endTime(std::string bookedString){
-    std::string::size_type i{0};
-    while (bookedString[i] != '-') i++;
-    return std::stoi(bookedString.substr(i + 1));
+std::string stdTimeRep(int timeRep){
+    std::stringstream ss;
+    ss << timeRep / 60 << ":" << timeRep % 60;
+    return ss.str();
 }
 
 // void print(std::vector <std::array<std::string, 2>> const &a){

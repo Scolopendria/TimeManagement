@@ -100,13 +100,13 @@ std::string verStr::get(bool __ATTRIBUTES, bool __CHILDREN){
     std::string pStr{Name + ":\n"};
 
     if (__ATTRIBUTES){
-        pStr += "\n********Attributes********\n";
-        for (auto &ID_pair : attributes)(((pStr += ID_pair[0]) += ": ") += ID_pair[1]) += "\n";
+        for (auto &ID_pair : attributes)
+            (((pStr += ID_pair[0]) += ": ") += ID_pair[1]) += "\n";
     }
 
     if (__CHILDREN){
-        pStr += "\n********Children********\n";
-        for (auto &c : children) (pStr += c.getName()) += "\n";
+        for (auto &c : children)
+            (pStr += c.getName()) += "\n";
     }
 
     return pStr;
@@ -137,7 +137,7 @@ void verStr::attribute(std::string attrName, std::string attrValue){
 
 verStr* verStr::child(std::string childName, bool &t){
     for (auto &c : children) if (c.getName() == childName) return &c;
-    if (t){t = false; return this;}
+    if (t){ t = false; return this; }
 
     std::string childString{"\"" + childName + "\"{}"};
     createChild(childString);
