@@ -53,9 +53,13 @@ void schedule(
         std::vector<std::array<std::string, 2>>{}
     );
 
-    // Wipe unwanted scheduled tasks
+    // Auto mark past tasks as "done"
+    // log to history
+    // mark chore as done -prevent rescheduling (something like "done"="<date>") tells atm to ignore task
+    // Wipe unwanted scheduled tasks (first?)
     while(!itemList.empty()){
         for (auto &item: itemList){
+            // initialize all the varibles
             startSearchTime = caltime.minute_t;
             tail = 0;
             iter = 0;
@@ -63,6 +67,7 @@ void schedule(
 
             while (true){
                 // condition checks.. behaviour and dependancies
+                // check if scheduling after last task
                 if (iter == scheduleBook.size()){
                     if (startSearchTime + item.timeLeft < 1440){
                         sPath->attribute(
@@ -73,7 +78,7 @@ void schedule(
                     } else std::cout << "Unable to schedule." << std::endl;
                     break;
                 }
-                
+                // check if scheduling in open time
                 if (startSearchTime > tail && startSearchTime < scheduleBook[iter].getStart()){
                     if (startSearchTime + item.timeLeft < scheduleBook[iter].getStart()){
                         sPath->attribute(
@@ -83,17 +88,17 @@ void schedule(
                         std::cout << "Successful scheduling." << std::endl;
                     } else startSearchTime = scheduleBook[iter].getEnd();
                 }
-                
+                // check if scheduling in another task's time
                 if (
                     startSearchTime >= scheduleBook[iter].getStart() &&
                     startSearchTime <= scheduleBook[iter].getEnd()
                 ) startSearchTime = scheduleBook[iter].getEnd() + 1;
-                
+                // increment
                 tail = scheduleBook[iter].getEnd();
                 iter++;
             }
         }
-
+        // reinitialize itemList -list of tasks left to be scheduled
         itemList = scheduleProgressCheck(
             gRoot,
             sPath,
@@ -111,12 +116,13 @@ std::vector<scheduleProgress> scheduleProgressCheck(
     std::string fullpath,
     std::vector<std::array<std::string, 2>> cascadeAttributes
 ){
+    // initialize pItem and placeholder values
     if (fullpath != "") fullpath += ":";
     fullpath += vStr->getName();
     scheduleProgress pItem{fullpath};
     std::vector<scheduleProgress> itemList, pList;
-    if (vStr->get("time") != "NULL") pItem.timeLeft = std::stoi(vStr->get("time"));
     // assign time to stated value
+    if (vStr->get("time") != "NULL") pItem.timeLeft = std::stoi(vStr->get("time"));
     // condition checks.. figure whether to schedule task for given date
     
     // schedule progress (time) calculations
@@ -125,10 +131,10 @@ std::vector<scheduleProgress> scheduleProgressCheck(
         if (t.getName() == fullpath){
             if (pItem.timeLeft + t.getStart() - t.getEnd() < 0)
                 sPath->deleteAttribute(t.getFullStdTime());
-            else pItem.timeLeft = pItem.timeLeft + t.getStart() - t.getEnd();
+            else pItem.timeLeft += (t.getStart() - t.getEnd());
         }
     }
-    
+    // store Item into itemList and insert itemList of child Itemlists
     if (pItem.timeLeft) itemList.push_back(pItem);
     for (auto &c : *vStr->getChildrenList()){
         pList = scheduleProgressCheck(&c, sPath, caltime, fullpath, cascadeAttributes);

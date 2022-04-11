@@ -36,12 +36,12 @@ class verStr{
         verStr* child(std::string childName, bool &t);
         void deleteAttribute(std::string attrName);
         void deleteChild(std::string childName);
+        verStr* getParent();
         //internal command class
-        verStr* sortAttributes();
         std::string updString();
+        verStr* sortAttributes();
         std::vector<std::array<std::string, 2>> getAttributesList();
         std::vector<verStr>* getChildrenList();
-        verStr* getParent();
 };
 
 class MegaStr{
@@ -81,10 +81,10 @@ class task{
         std::string stdTime;
     public:
         task(std::string taskName, int start, int end);
-        std::string getName();
-        std::string getFullStdTime(); // deprecate
         int getStart();
         int getEnd();
+        std::string getName();
+        std::string getFullStdTime();
 };
 
 #include "VerStr.cpp"
