@@ -3,7 +3,7 @@
 	"tasks": [
 		{
 			"type": "cppbuild",
-			"label": "C/C++: g++.exe build",
+			"label": "C/C++: g++ build",
 			"command": "g++",
 			"args": [
 				"-std=c++20",

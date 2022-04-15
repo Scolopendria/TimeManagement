@@ -20,7 +20,7 @@ void handleUser(MegaStr *mStr){
         while (gate[1]){
             std::cout << "Enter command: ";
             std::cin >> str[0];
-            if (str[0] == "!quit"){
+            if (str[0] == "!quit" || str[0] == ""){
                 gate[1] = false;
                 gate[0] = false;
             } else if (str[0] == "!logout"){
