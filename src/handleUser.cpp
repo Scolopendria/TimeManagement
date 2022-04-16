@@ -15,7 +15,8 @@ void handleUser(MegaStr *mStr){
         gate[1] = true;
         std::cout << "Your name: ";
         std::cin >> str[0];
-        currentLocation = mStr->vStr.child(str[0], ctr)->child("Goals", ctr);
+        if (str[0] == "") gate[1] = 0;
+        else currentLocation = mStr->vStr.child(str[0], ctr)->child("Goals", ctr);
 
         while (gate[1]){
             std::cout << "Enter command: ";

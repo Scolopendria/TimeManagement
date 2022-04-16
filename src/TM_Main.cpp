@@ -1,6 +1,6 @@
 // Main of TM
 
-#include "Headers.h"
+#include "headers.h"
 #include <iostream>
 
 int main(){
@@ -14,7 +14,7 @@ int main(){
         exit(EXIT_FAILURE);
     }
     getchar();
-    handleUser(&mStr); // refactor scheduler to be able to be user called
+    handleUser(&mStr); // refactor scheduler to be able to be user called and modular
     scheduler(&mStr);
 
     return 0;
