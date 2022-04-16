@@ -11,7 +11,7 @@
 				"-g",
 				"${workspaceFolder}/src/TM_Main.cpp",
 				"-o",
-				"${workspaceFolder}/bin/TM_Main.exe"
+				"${workspaceFolder}/bin/TM_Main"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}/bin"

@@ -4,7 +4,7 @@
     "name": "(gdb) Launch",
     "type": "cppdbg",
     "request": "launch",
-    "program": "${workspaceFolder}/bin/TM_Main.exe",
+    "program": "${workspaceFolder}/bin/TM_Main",
     "args": [],
     "stopAtEntry": true,
     "cwd": "${workspaceFolder}/bin",
