@@ -48,6 +48,7 @@ class MegaStr{
     private:
         std::string getFile();
     public:
+        MegaStr();
         ~MegaStr();
         verStr vStr{getFile()};
 };

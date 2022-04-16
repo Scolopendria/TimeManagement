@@ -5,6 +5,13 @@
 #include <fstream>
 #include <sstream>
 
+MegaStr::MegaStr(){
+    if (vStr.getName() != "Automatic Time Management"){ // Guard against entering an unknown file. 
+        std::cout << "Object name is not 'Automatic Time Management'." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
 MegaStr::~MegaStr(){
     std::ofstream file("system.txt");
     file << vStr.format();
