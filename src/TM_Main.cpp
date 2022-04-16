@@ -10,7 +10,7 @@ int main(){
         std::cout << "Object name is not 'Automatic Time Management'." << std::endl;
         exit(EXIT_FAILURE);
     }
-    //testtest
+    //testtesttest
     handleUser(&mStr); // refactor scheduler to be able to be user called and modular
     scheduler(&mStr);
 
