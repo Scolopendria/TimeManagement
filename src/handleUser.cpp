@@ -6,6 +6,10 @@
 #include <string>
 #include <vector>
 
+//get handleUser capable of receiving special characters ('\' -> '\\', '"' -> '\"', ':' -> '\:', etc...)
+//store input and cleanse them 
+//linilly !quit does not print unnecessary middle commands
+//add functionality to handle terminal arguments like run: "./TM_Main linilly !getProfficiency !quit" or "./TM_Main !auto" 
 void handleUser(MegaStr *mStr){
     bool ctr{false}, gate[2]{true, true};
     std::string str[2];

@@ -1,49 +1,84 @@
 "Automatic Time Management"{
 	"linilly"{
 		"Goals"{
+			"example"{
+				"timeMarginEnd"="20"
+				"timeMarginEnd"{
+					"time"="20"
+					"startCondition"="immediatelyAfter parent"
+				}
+			}
 		}
 		"Schedule"{
 			"2022:4:16"{
-				"12:27-12:57"="Goals"
+				"19:42-20:12"="Goals"
+				"20:13-20:43"="Goals:example"
+				"20:44-21:4"="Goals:example:timeMarginEnd"
 			}
 			"2022:4:17"{
 				"0:0-0:30"="Goals"
+				"0:31-1:1"="Goals:example"
+				"1:2-1:22"="Goals:example:timeMarginEnd"
 			}
 			"2022:4:18"{
 				"0:0-0:30"="Goals"
+				"0:31-1:1"="Goals:example"
+				"1:2-1:22"="Goals:example:timeMarginEnd"
 			}
 			"2022:4:19"{
 				"0:0-0:30"="Goals"
+				"0:31-1:1"="Goals:example"
+				"1:2-1:22"="Goals:example:timeMarginEnd"
 			}
 			"2022:4:20"{
 				"0:0-0:30"="Goals"
+				"0:31-1:1"="Goals:example"
+				"1:2-1:22"="Goals:example:timeMarginEnd"
 			}
 			"2022:4:21"{
 				"0:0-0:30"="Goals"
+				"0:31-1:1"="Goals:example"
+				"1:2-1:22"="Goals:example:timeMarginEnd"
 			}
 			"2022:4:22"{
 				"0:0-0:30"="Goals"
+				"0:31-1:1"="Goals:example"
+				"1:2-1:22"="Goals:example:timeMarginEnd"
 			}
 			"2022:4:23"{
 				"0:0-0:30"="Goals"
+				"0:31-1:1"="Goals:example"
+				"1:2-1:22"="Goals:example:timeMarginEnd"
 			}
 			"2022:4:24"{
 				"0:0-0:30"="Goals"
+				"0:31-1:1"="Goals:example"
+				"1:2-1:22"="Goals:example:timeMarginEnd"
 			}
 			"2022:4:25"{
 				"0:0-0:30"="Goals"
+				"0:31-1:1"="Goals:example"
+				"1:2-1:22"="Goals:example:timeMarginEnd"
 			}
 			"2022:4:26"{
 				"0:0-0:30"="Goals"
+				"0:31-1:1"="Goals:example"
+				"1:2-1:22"="Goals:example:timeMarginEnd"
 			}
 			"2022:4:27"{
 				"0:0-0:30"="Goals"
+				"0:31-1:1"="Goals:example"
+				"1:2-1:22"="Goals:example:timeMarginEnd"
 			}
 			"2022:4:28"{
 				"0:0-0:30"="Goals"
+				"0:31-1:1"="Goals:example"
+				"1:2-1:22"="Goals:example:timeMarginEnd"
 			}
 			"2022:4:29"{
 				"0:0-0:30"="Goals"
+				"0:31-1:1"="Goals:example"
+				"1:2-1:22"="Goals:example:timeMarginEnd"
 			}
 		}
 	}

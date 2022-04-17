@@ -7,6 +7,7 @@
 #include <vector>
 #include <array>
 
+//format with commmas
 verStr::verStr(std::string s, verStr* parentNode){
     parent = parentNode;
     String = s;
@@ -129,10 +130,11 @@ verStr* verStr::getParent(){
     return parent;
 }
 
-void verStr::attribute(std::string attrName, std::string attrValue){
+verStr* verStr::attribute(std::string attrName, std::string attrValue){
     std::string pStr[2]{attrName, attrValue};
     deleteAttribute(attrName);
     createAttribute(pStr);
+    return this;
 }
 
 verStr* verStr::child(std::string childName, bool &t){

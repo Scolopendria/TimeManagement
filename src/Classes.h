@@ -32,7 +32,7 @@ class verStr{
         std::string get(bool __ATTRIBUTES, bool __CHILDREN);
         std::string get(std::string attrName);
         // command class
-        void attribute(std::string attrName, std::string attrValue);
+        verStr* attribute(std::string attrName, std::string attrValue);
         verStr* child(std::string childName, bool &t);
         void deleteAttribute(std::string attrName);
         void deleteChild(std::string childName);
