@@ -10,11 +10,7 @@ std::string stdTimeRep(int timeRep);
 verStr* nav(std::string fullpath, verStr* gRoot);
 std::vector<task> initAttributes(std::vector<std::array<std::string, 2>> Attributes);
 void scheduler(MegaStr *mStr);
-void schedule(
-    verStr *gRoot,
-    verStr *sPath, 
-    Calendar caltime
-);
+void schedule(verStr *gRoot, verStr *sPath, Calendar caltime);
 bool collide(
     verStr *gRoot,
     verStr *sPath,
@@ -27,7 +23,7 @@ std::vector<scheduleProgress> scheduleProgressCheck(
     verStr *vStr,
     verStr *sPath,
     Calendar caltime,
-    std::string fullpath,
+    std::string parentPath,
     std::vector<std::array<std::string, 2>> cascadeAttributes
 );
 
@@ -46,12 +42,8 @@ void scheduler(MegaStr *mStr){
     }
 }
 
-void schedule(
-    verStr *gRoot,
-    verStr *sPath, 
-    Calendar caltime
-){
-    // cascadeAttributes = off, rescheduling = off, "proper classing and automatic declarations" = off
+void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
+    // cascadeAttributes = off, rescheduling = off, autoDeclarations = off
     // decides when to schedule in a day
     bool scheduled;
     int autoStart, ctr{0};
@@ -70,12 +62,13 @@ void schedule(
 
     // Auto mark past tasks as "done"
     // log to history
-    // mark chore as done -prevent rescheduling (something like "done"="<date>") tells atm to ignore task
+    // mark chore as done -prevent rescheduling (something like "done"="<date>") tells
+    // atm to ignore task
     // Wipe unwanted scheduled tasks (first?)
 
     while(!itemList.empty()){
         for (auto item: itemList){ // go through the list of items to schedule
-            // initialize all the varibles
+            // initialize all the variables
             scheduleBook = initAttributes(sPath->sortAttributes()->getAttributesList());
             scheduled = false;
             autoStart = 1;
@@ -84,7 +77,10 @@ void schedule(
                 scheduled = collide(
                     gRoot,
                     sPath,
-                    caltime.minute_t + 1,
+                    std::max(
+                        caltime.minute_t + 1,
+                        std::stoi(nav(item.fpath, gRoot)->get("start"))
+                    ),
                     item,
                     scheduleBook,
                     std::stoi(nav(item.fpath, gRoot)->get("start"))
@@ -93,7 +89,8 @@ void schedule(
                 for (auto t : scheduleBook){
                     if (autoStart > caltime.minute_t){
                         // condition checks.. behaviour and dependancies
-                        // check if scheduling after last task
+                        // check if scheduling before the next task's start time
+                        // if true, that means autoStart is in open time
                         if (autoStart < t.getStart()){
                             scheduled = collide(
                                 gRoot,
@@ -106,7 +103,9 @@ void schedule(
                             if (scheduled) break;
                         }
                     }
-                    autoStart = t.getEnd() + superstoi(nav(t.getName(), gRoot)->get("timeMarginEnd"));
+                    autoStart =
+                        t.getEnd() +
+                        superstoi(nav(t.getName(), gRoot)->get("timeMarginEnd"));
                 }
                 if (!scheduled){
                     scheduled = collide(
@@ -143,9 +142,9 @@ bool collide(
     int start
 ){
     //initializations
-    int ceilValue{startCeiling}, floorValue{1440}, ctr,
-        totalUsedTime{item.timeLeft}, allocatedTime;
-    std::size_t iter{0}, slider, ceiling, floor;
+    int ceilValue{startCeiling}, floorValue{1440},
+        totalUsedTime{item.timeLeft}, allocatedTime, nextHead;
+    std::size_t iter{0}, ceiling, floor, slider;
     auto superstoi = [](std::string str){
         if (str == "NULL") return 0;
         return std::stoi(str);
@@ -153,69 +152,61 @@ bool collide(
     // set iters
     while (iter != scheduleBook.size()){
         if (
+            start >
             scheduleBook[iter].getEnd() +
-            superstoi(nav(
-                scheduleBook[iter].getName(),
-                gRoot
-            )->get("timeMarginEnd")) < start
+            superstoi(nav(scheduleBook[iter].getName(), gRoot)->get("timeMarginEnd"))
         ) { iter++; } else break;
     }
     floor = iter;
     ceiling = iter;
-    if (iter == scheduleBook.size()) ctr = 1440;
-    else ctr = (scheduleBook[ceiling].getStart());
-    if (ctr > start) ceiling--;
+    if (iter == scheduleBook.size()) nextHead = 1440;
+    else nextHead = (scheduleBook[ceiling].getStart());
+    // check to see if nextHead is greater than start
+    // if true, that means scheduling is in open space
+    // and ceiling is set to the item above it
+    if (nextHead > start) ceiling--;
     //find top boulder
     while (ceiling != std::string::npos){
         if (
-            nav(
-                scheduleBook[ceiling].getName(),
-                gRoot
-            )->get("start") == "NULL" &&
+            nav(scheduleBook[ceiling].getName(), gRoot)->get("start") == "NULL" &&
+            startCeiling >
             scheduleBook[ceiling].getEnd() +
-            superstoi(nav(
-                scheduleBook[ceiling].getName(),
-                gRoot
-            )->get("timeMarginEnd")) > startCeiling
+            superstoi(nav(scheduleBook[ceiling].getName(), gRoot)->get("timeMarginEnd"))
         ){ ceiling--; } else break;
     }
     if (ceiling != std::string::npos){
         ceilValue =
             scheduleBook[ceiling].getEnd() +
-            superstoi(nav(
-                scheduleBook[ceiling].getName(),
-                gRoot
-            )->get("timeMarginEnd"));
+            superstoi(nav(scheduleBook[ceiling].getName(), gRoot)->get("timeMarginEnd"));
     }
     //find bottom boulder
     while (floor != scheduleBook.size()){
-        if (
-            nav(
-                scheduleBook[floor].getName(),
-                gRoot
-            )->get("start") == "NULL"
-        ){ floor++; } else break;
+        if (nav(scheduleBook[floor].getName(), gRoot)->get("start") == "NULL") floor++;
+        else break;
     }
     if (floor != scheduleBook.size()) floorValue = scheduleBook[floor].getStart();
     //calculate allocatedTime and totalUsedTime
     allocatedTime = floorValue - ceilValue;
-    for (slider = ceiling + 1; slider < floor; slider++)
-        totalUsedTime += scheduleBook[slider].getTime();
-    //if time is not enough find the lowest priority element (including that of boulders) and chuck it
-    // chuck not fully implemented // add self-restrictive control for support of 'start'
+    for (slider = ceiling + 1; slider < floor; slider++){
+        totalUsedTime +=
+            1 + scheduleBook[slider].getTime() +
+            superstoi(nav(scheduleBook[slider].getName(), gRoot)->get("timeMarginEnd"));
+    }
+    // if time is not enough, find LP element and chuck it
+    // if lowest element is boulder, reschedule disregarding the boulder
+    // chuck not implemented 
+    // add self-restrictive control for support of 'start'
     if (allocatedTime > totalUsedTime){
         for (slider = ceiling + 1; slider < iter; slider++){
             sPath->deleteAttribute(scheduleBook[slider].getFullStdTime());
             sPath->attribute(
-                stdTimeRep(ceilValue) + "-" + stdTimeRep(ceilValue + scheduleBook[slider].getTime()),
+                stdTimeRep(ceilValue) + "-" +
+                stdTimeRep(ceilValue + scheduleBook[slider].getTime()),
                 scheduleBook[slider].getName()
             );
             ceilValue +=
                 1 + scheduleBook[slider].getTime() +
-                superstoi(nav(
-                    scheduleBook[slider].getName(),
-                    gRoot
-                )->get("timeMarginEnd"));
+                superstoi(nav(scheduleBook[slider].getName(), gRoot)->get("timeMarginEnd"));
         }
 
         sPath->attribute(
@@ -229,40 +220,38 @@ bool collide(
         for (slider = iter; slider < floor; slider++){
             sPath->deleteAttribute(scheduleBook[slider].getFullStdTime());
             sPath->attribute(
-                stdTimeRep(ceilValue) + "-" + stdTimeRep(ceilValue + scheduleBook[slider].getTime()),
+                stdTimeRep(ceilValue) + "-" +
+                stdTimeRep(ceilValue + scheduleBook[slider].getTime()),
                 scheduleBook[slider].getName()
             );
             ceilValue +=
                 1 + scheduleBook[slider].getTime() +
-                superstoi(nav(
-                    scheduleBook[slider].getName(),
-                    gRoot
-                )->get("timeMarginEnd"));
+                superstoi(nav(scheduleBook[slider].getName(), gRoot)->get("timeMarginEnd"));
         }
         return true;
     }
     //recalculate, if item is lowest prioirty return false
     return false;
-}
+} // 100 lines total, 45 lines long without comments and formatting
 
 std::vector<scheduleProgress> scheduleProgressCheck(
     verStr *vStr,
     verStr *sPath,
     Calendar caltime,
-    std::string fullpath,
+    std::string parentPath,
     std::vector<std::array<std::string, 2>> cascadeAttributes
 ){ // decides whether to schedule for a day
-    // initialize pItem and placeholder values
+    // initialize fullpath
+    std::string fullpath{parentPath};
     if (fullpath != "") fullpath += ":";
     fullpath += vStr->getName();
-    
+    // initialize pItem, Itemlist and pList
     scheduleProgress pItem{fullpath};
     std::vector<scheduleProgress> itemList, pList;
     // default values initialization
     if (vStr->get("time") != "NULL") pItem.timeLeft = std::stoi(vStr->get("time"));
     // condition checks.. figure whether to schedule task for given date
-    
-    // schedule progress (time) calculations
+    // schedule progress (timeLeft) calculations
     auto scheduleBook{initAttributes(sPath->sortAttributes()->getAttributesList())};
     for (auto t : scheduleBook){
         if (t.getName() == fullpath){

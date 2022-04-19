@@ -6,17 +6,22 @@
 				"test"{
 				}
 			}
+			"piano"{
+				"start"="600"
+			}
 		}
 		"Schedule"{
-			"2022:4:18"{
-				"19:58-20:28"="Goals:example"
-				"20:49-21:19"="Goals:example:test"
-				"21:20-21:50"="Goals"
-			}
 			"2022:4:19"{
-				"0:1-0:31"="Goals:example:test"
-				"0:32-1:2"="Goals:example"
-				"1:3-1:33"="Goals"
+				"10:0-10:30"="Goals:piano"
+				"10:31-11:1"="Goals:example:test"
+				"11:2-11:32"="Goals:example"
+				"11:53-12:23"="Goals"
+			}
+			"2022:4:20"{
+				"10:0-10:30"="Goals:example:test"
+				"10:31-11:1"="Goals:example"
+				"11:22-11:52"="Goals"
+				"11:53-12:23"="Goals:piano"
 			}
 		}
 	}
