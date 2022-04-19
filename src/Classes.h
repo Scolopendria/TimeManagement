@@ -18,11 +18,11 @@ class verStr{
         verStr* strip();
         verStr* objectify();
         // members
-        std::string String;
-        std::string Name;
-        std::vector<verStr> children;
-        std::vector<std::array<std::string, 2>> attributes;
-        verStr* parent;
+        std::string String{};
+        std::string Name{};
+        std::vector<verStr> children{};
+        std::vector<std::array<std::string, 2>> attributes{};
+        verStr* parent{};
     public:
         verStr(std:: string s);
         verStr(std:: string s, verStr* parentNode);
@@ -55,23 +55,22 @@ class MegaStr{
 
 class Calendar{
     public:
+        Calendar();
         void init(int offset);
-        int year;
-        int month;
-        int date;
-        int weekday;
-        int minute_t;
-        std::string strDate;
+        int year{};
+        int month{};
+        int date{};
+        int weekday{};
+        int minute_t{};
+        std::string strDate{};
+        std::string baseDate{};
 };
 
 class scheduleProgress{
-    private:
-        std::string name; // deprecate
-        std::string path; // deprecate
     public:
         scheduleProgress(std::string fullpath);
-        int timeLeft{30};
-        std::string fpath{""};
+        int timeLeft{};
+        std::string fpath{};
 };
 
 class task{
