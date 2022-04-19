@@ -6,7 +6,6 @@
 #include <vector>
 #include <algorithm>
 
-
 std::string stdTimeRep(int timeRep);
 verStr* nav(std::string fullpath, verStr* gRoot);
 std::vector<task> initAttributes(std::vector<std::array<std::string, 2>> Attributes);
@@ -15,6 +14,14 @@ void schedule(
     verStr *gRoot,
     verStr *sPath, 
     Calendar caltime
+);
+bool collide(
+    verStr *gRoot,
+    verStr *sPath,
+    int startCeiling,
+    scheduleProgress item,
+    std::vector<task> scheduleBook,
+    int start
 );
 std::vector<scheduleProgress> scheduleProgressCheck(
     verStr *vStr,
@@ -27,7 +34,7 @@ std::vector<scheduleProgress> scheduleProgressCheck(
 void scheduler(MegaStr *mStr){
     bool ctr{false};
     Calendar caltime;
-    for (int i{0}; i < 14; i++){
+    for (int i{0}; i < 4; i++){
         caltime.init(i);
         for (auto &c : *mStr->vStr.getChildrenList()){
             schedule(
@@ -46,61 +53,71 @@ void schedule(
 ){
     // cascadeAttributes = off, rescheduling = off, "proper classing and automatic declarations" = off
     // decides when to schedule in a day
-    int startSearchTime, tail;
-    std::size_t iter;
+    bool scheduled;
+    int autoStart, ctr{0};
+    std::vector<task> scheduleBook;
     auto itemList = scheduleProgressCheck(
         gRoot,
         sPath,
         caltime,
-        "",
+        std::string{},
         std::vector<std::array<std::string, 2>>{}
     );
+    auto superstoi = [](std::string str){
+        if (str == "NULL") return 0;
+        return std::stoi(str);
+    };
 
     // Auto mark past tasks as "done"
     // log to history
     // mark chore as done -prevent rescheduling (something like "done"="<date>") tells atm to ignore task
     // Wipe unwanted scheduled tasks (first?)
-    while(!itemList.empty()){
-        for (auto &item: itemList){
-            // initialize all the varibles
-            startSearchTime = caltime.minute_t;
-            tail = 0;
-            iter = 0;
-            auto scheduleBook{initAttributes(sPath->sortAttributes()->getAttributesList())};
 
-            if(true);
-            while (true){
-                // condition checks.. behaviour and dependancies
-                // check if scheduling after last task
-                std::cout << nav(item.fpath, gRoot)->getName() << std::endl;
-                if (iter == scheduleBook.size()){
-                    if (startSearchTime + item.timeLeft < 1440){
-                        sPath->attribute(
-                            stdTimeRep(startSearchTime) + "-" + stdTimeRep(startSearchTime + item.timeLeft),
-                            item.fpath
-                        );
-                        std::cout << "Successful scheduling." << std::endl;
-                    } else std::cout << "Unable to schedule." << std::endl;
-                    break;
+    while(!itemList.empty()){
+        for (auto item: itemList){ // go through the list of items to schedule
+            // initialize all the varibles
+            scheduleBook = initAttributes(sPath->sortAttributes()->getAttributesList());
+            scheduled = false;
+            autoStart = 1;
+            
+            if (nav(item.fpath, gRoot)->get("start") != "NULL"){
+                scheduled = collide(
+                    gRoot,
+                    sPath,
+                    caltime.minute_t,
+                    item,
+                    scheduleBook,
+                    std::stoi(nav(item.fpath, gRoot)->get("start"))
+                );
+            } else { // set autoStart
+                for (auto t : scheduleBook){
+                    if (autoStart > caltime.minute_t){
+                        // condition checks.. behaviour and dependancies
+                        // check if scheduling after last task
+                        if (autoStart < t.getStart()){
+                            scheduled = collide(
+                                gRoot,
+                                sPath,
+                                caltime.minute_t,
+                                item,
+                                scheduleBook,
+                                autoStart
+                            );
+                            if (scheduled) break;
+                        }
+                    }
+                    autoStart = t.getEnd() + superstoi(nav(t.getName(), gRoot)->get("timeMarginEnd"));
                 }
-                // check if scheduling in open time
-                if (startSearchTime > tail && startSearchTime < scheduleBook[iter].getStart()){
-                    if (startSearchTime + item.timeLeft < scheduleBook[iter].getStart()){
-                        sPath->attribute(
-                            stdTimeRep(startSearchTime) + "-" + stdTimeRep(startSearchTime + item.timeLeft),
-                            item.fpath
-                        );
-                        std::cout << "Successful scheduling." << std::endl;
-                    } else startSearchTime = scheduleBook[iter].getEnd();
+                if (!scheduled){
+                    scheduled = collide(
+                        gRoot,
+                        sPath,
+                        caltime.minute_t,
+                        item,
+                        scheduleBook,
+                        autoStart
+                    );
                 }
-                // check if scheduling in another task's time
-                if (
-                    startSearchTime >= scheduleBook[iter].getStart() &&
-                    startSearchTime <= scheduleBook[iter].getEnd()
-                ) startSearchTime = scheduleBook[iter].getEnd() + 1;
-                // increment
-                tail = scheduleBook[iter].getEnd();
-                iter++;
             }
         }
         // reinitialize itemList -list of tasks left to be scheduled
@@ -108,10 +125,114 @@ void schedule(
             gRoot,
             sPath,
             caltime,
-            "",
+            std::string{},
             std::vector<std::array<std::string, 2>>{}
         );
+        //sudo priority
+        ctr++;
+        if (ctr > 3) itemList.clear();
     }
+}
+
+bool collide(
+    verStr *gRoot,
+    verStr *sPath,
+    int startCeiling,
+    scheduleProgress item,
+    std::vector<task> scheduleBook,
+    int start
+){
+    //initializations
+    int ceilValue{startCeiling}, floorValue{1440}, ctr,
+        totalUsedTime{item.timeLeft}, allocatedTime;
+    std::size_t iter{0}, slider, ceiling, floor;
+    auto superstoi = [](std::string str){
+        if (str == "NULL") return 0;
+        return std::stoi(str);
+    };
+    // set iters
+    while (iter != scheduleBook.size()){
+        if (
+            scheduleBook[iter].getEnd() +
+            superstoi(nav(
+                scheduleBook[iter].getName(),
+                gRoot)->get("timeMarginEnd")
+            ) < start
+        ) { iter++; } else break;
+    }
+    floor = iter;
+    ceiling = iter;
+    if (iter == scheduleBook.size()) ctr = 1440;
+    else ctr = (scheduleBook[ceiling].getStart());
+    if (start < ctr) ceiling--;
+    //find top boulder
+    while (ceiling != std::string::npos){
+        if (
+            nav(
+                scheduleBook[ceiling].getName(),
+                gRoot
+            )->get("start") == "NULL" &&
+            scheduleBook[ceiling].getEnd() +
+            superstoi(nav(
+                scheduleBook[ceiling].getName(),
+                gRoot)->get("timeMarginEnd")
+            ) < startCeiling
+        ){ ceiling--; } else break;
+    }
+    if (ceiling != std::string::npos){
+        ceilValue =
+            scheduleBook[ceiling].getEnd() +
+            superstoi(nav(
+                scheduleBook[ceiling].getName(),
+                gRoot)->get("timeMarginEnd")
+            );
+    }
+
+    //find bottom boulder
+    while (floor != scheduleBook.size()){
+        if (
+            nav(
+                scheduleBook[floor].getName(),
+                gRoot
+            )->get("start") == "NULL"
+        ){ floor++; } else break;
+    }
+    if (floor != scheduleBook.size()) floorValue = scheduleBook[floor].getStart();
+    //calculate total time available to work with
+    allocatedTime = floorValue - ceilValue;
+    //calculate time of all tasks invoved (totalTime = top + bottom + self.time)
+    for (slider = ceiling + 1; slider < floor; slider++)
+        totalUsedTime += scheduleBook[slider].getTime();
+    //if time is not enough find the lowest priority element including that of boulders and chuck it
+    // chuck not fully implemented //add self-restrictive control for 'start' support
+    if (allocatedTime > totalUsedTime){
+        for (slider = ceiling + 1; slider < iter; slider++){
+            sPath->deleteAttribute(scheduleBook[slider].getFullStdTime());
+            sPath->attribute(
+                stdTimeRep(ceilValue) + "-" + stdTimeRep(ceilValue + scheduleBook[slider].getTime()),
+                scheduleBook[slider].getName()
+            );
+            ceilValue += scheduleBook[slider].getTime() + 1;
+        }
+
+        sPath->attribute(
+            stdTimeRep(ceilValue) + "-" + stdTimeRep(ceilValue + item.timeLeft),
+            item.fpath
+        );
+        ceilValue += item.timeLeft + 1;
+
+        for (slider = iter; slider < floor; slider++){
+            sPath->deleteAttribute(scheduleBook[slider].getFullStdTime());
+            sPath->attribute(
+                stdTimeRep(ceilValue) + "-" + stdTimeRep(ceilValue + scheduleBook[slider].getTime()),
+                scheduleBook[slider].getName()
+            );
+            ceilValue += scheduleBook[slider].getTime() + 1;
+        }
+        return true;
+    }
+    //recalculate, if lowest priority is itself return false
+    return false;
 }
 
 std::vector<scheduleProgress> scheduleProgressCheck(
@@ -124,25 +245,19 @@ std::vector<scheduleProgress> scheduleProgressCheck(
     // initialize pItem and placeholder values
     if (fullpath != "") fullpath += ":";
     fullpath += vStr->getName();
+    
     scheduleProgress pItem{fullpath};
     std::vector<scheduleProgress> itemList, pList;
     // default values initialization
-    bool ctr{false};
     if (vStr->get("time") != "NULL") pItem.timeLeft = std::stoi(vStr->get("time"));
-    if (vStr->get("timeMarginEnd") != "NULL"){
-        vStr->child("timeMarginEnd", ctr)->
-            attribute("time", vStr->get("timeMarginEnd"))->
-            attribute("startCondition", "immediatelyAfter parent");
-    }
     // condition checks.. figure whether to schedule task for given date
     
     // schedule progress (time) calculations
     auto scheduleBook{initAttributes(sPath->sortAttributes()->getAttributesList())};
     for (auto t : scheduleBook){
         if (t.getName() == fullpath){
-            if (pItem.timeLeft + t.getStart() - t.getEnd() < 0)
-                sPath->deleteAttribute(t.getFullStdTime());
-            else pItem.timeLeft += (t.getStart() - t.getEnd());
+            if (pItem.timeLeft < t.getTime()) sPath->deleteAttribute(t.getFullStdTime());
+            else pItem.timeLeft -= t.getTime();
         }
     }
     // store Item into itemList and insert itemList of child Itemlists
@@ -157,18 +272,23 @@ std::vector<scheduleProgress> scheduleProgressCheck(
 
 std::vector<task> initAttributes(std::vector<std::array<std::string, 2>> Attributes){
     std::vector<task> scheduleBook;
+    std::string::size_type i;
     auto minuteTimeRep = [](std::string timeRep){
         std::string::size_type iter{0};
         while (timeRep[iter] != ':') iter++;
         return std::stoi(timeRep.substr(0, iter)) * 60 + std::stoi(timeRep.substr(iter + 1));
     };
 
-    for (auto &ID_pair : Attributes){
-        std::string::size_type i{0};
+    for (auto ID_pair : Attributes){
+        i = 0;
         while (ID_pair[0][i] != '-') i++;
-        const int start{minuteTimeRep(ID_pair[0].substr(0, i))};
-        const int end{minuteTimeRep(ID_pair[0].substr(i + 1))};
-        scheduleBook.push_back(task{ID_pair[1], start, end});
+        scheduleBook.push_back(
+            task{
+                ID_pair[1],                             //fullpath
+                minuteTimeRep(ID_pair[0].substr(0, i)), //start
+                minuteTimeRep(ID_pair[0].substr(i + 1)) //end
+            }
+        );
     }
     
     return scheduleBook;

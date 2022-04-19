@@ -30,7 +30,6 @@ class verStr{
         std::string getName();
         std::string format();
         std::string get(bool __ATTRIBUTES, bool __CHILDREN);
-        std::string get(std::string attrName);
         // command class
         verStr* attribute(std::string attrName, std::string attrValue);
         verStr* child(std::string childName, bool &t);
@@ -42,6 +41,7 @@ class verStr{
         verStr* sortAttributes();
         std::vector<std::array<std::string, 2>> getAttributesList();
         std::vector<verStr>* getChildrenList();
+        std::string get(std::string attrName);
 };
 
 class MegaStr{
@@ -78,12 +78,14 @@ class task{
     private:
         int startTime;
         int endTime;
+        int timeUsed;
         std::string name;
         std::string stdTime;
     public:
         task(std::string taskName, int start, int end);
         int getStart();
         int getEnd();
+        int getTime();
         std::string getName();
         std::string getFullStdTime();
 };

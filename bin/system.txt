@@ -3,82 +3,38 @@
 		"Goals"{
 			"example"{
 				"timeMarginEnd"="20"
-				"timeMarginEnd"{
-					"time"="20"
-					"startCondition"="immediatelyAfter parent"
+				"test"{
 				}
+			}
+			"test"{
+				"time"="45"
 			}
 		}
 		"Schedule"{
-			"2022:4:16"{
-				"19:42-20:12"="Goals"
-				"20:13-20:43"="Goals:example"
-				"20:44-21:4"="Goals:example:timeMarginEnd"
-			}
-			"2022:4:17"{
-				"0:0-0:30"="Goals"
-				"0:31-1:1"="Goals:example"
-				"1:2-1:22"="Goals:example:timeMarginEnd"
-			}
 			"2022:4:18"{
-				"0:0-0:30"="Goals"
-				"0:31-1:1"="Goals:example"
-				"1:2-1:22"="Goals:example:timeMarginEnd"
+				"21:22-21:52"="Goals:example"
+				"22:23-23:8"="Goals:test"
+				"23:9-23:39"="Goals:example:test"
+				"23:40-24:10"="Goals"
 			}
 			"2022:4:19"{
-				"0:0-0:30"="Goals"
-				"0:31-1:1"="Goals:example"
-				"1:2-1:22"="Goals:example:timeMarginEnd"
+				"0:0-0:45"="Goals:test"
+				"0:46-1:16"="Goals:example"
+				"1:17-1:47"="Goals"
+				"1:48-2:18"="Goals:example:test"
 			}
 			"2022:4:20"{
-				"0:0-0:30"="Goals"
+				"0:0-0:30"="Goals:example:test"
 				"0:31-1:1"="Goals:example"
-				"1:2-1:22"="Goals:example:timeMarginEnd"
+				"1:2-1:22"="Goals"
+				"1:23-2:8"="Goals:test"
+				"2:9-2:19"="Goals"
 			}
 			"2022:4:21"{
-				"0:0-0:30"="Goals"
-				"0:31-1:1"="Goals:example"
-				"1:2-1:22"="Goals:example:timeMarginEnd"
-			}
-			"2022:4:22"{
-				"0:0-0:30"="Goals"
-				"0:31-1:1"="Goals:example"
-				"1:2-1:22"="Goals:example:timeMarginEnd"
-			}
-			"2022:4:23"{
-				"0:0-0:30"="Goals"
-				"0:31-1:1"="Goals:example"
-				"1:2-1:22"="Goals:example:timeMarginEnd"
-			}
-			"2022:4:24"{
-				"0:0-0:30"="Goals"
-				"0:31-1:1"="Goals:example"
-				"1:2-1:22"="Goals:example:timeMarginEnd"
-			}
-			"2022:4:25"{
-				"0:0-0:30"="Goals"
-				"0:31-1:1"="Goals:example"
-				"1:2-1:22"="Goals:example:timeMarginEnd"
-			}
-			"2022:4:26"{
-				"0:0-0:30"="Goals"
-				"0:31-1:1"="Goals:example"
-				"1:2-1:22"="Goals:example:timeMarginEnd"
-			}
-			"2022:4:27"{
-				"0:0-0:30"="Goals"
-				"0:31-1:1"="Goals:example"
-				"1:2-1:22"="Goals:example:timeMarginEnd"
-			}
-			"2022:4:28"{
-				"0:0-0:30"="Goals"
-				"0:31-1:1"="Goals:example"
-				"1:2-1:22"="Goals:example:timeMarginEnd"
-			}
-			"2022:4:29"{
-				"0:0-0:30"="Goals"
-				"0:31-1:1"="Goals:example"
-				"1:2-1:22"="Goals:example:timeMarginEnd"
+				"0:30-1:15"="Goals:test"
+				"1:16-1:46"="Goals:example:test"
+				"1:47-2:17"="Goals:example"
+				"2:18-2:48"="Goals"
 			}
 		}
 	}

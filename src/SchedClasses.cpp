@@ -24,14 +24,16 @@ void Calendar::init(int offset){
 scheduleProgress::scheduleProgress(std::string fullpath){
     fpath = fullpath;
     name = fullpath;
-    std::string::size_type i{fullpath.length()-1};
-    while (i != std::string::npos){
+    for (
+        std::string::size_type i{fullpath.length()-1};
+        i != std::string::npos;
+        i--
+    ){
         if (fullpath[i] == ':'){
             name = fullpath.substr(i + 1);
             path = fullpath.substr(0, i);
             break;
         }
-        i--;
     }
 }
 
@@ -41,6 +43,7 @@ task::task(std::string taskName, int start, int end){
     name = taskName;
     startTime = start;
     endTime = end;
+    timeUsed = end - start;
 
     ss << startTime / 60 << ":" << startTime % 60 << "-" << endTime / 60 << ":" << endTime % 60;
     stdTime = ss.str();
@@ -61,4 +64,7 @@ int task::getEnd(){
     return endTime;
 }
 
+int task::getTime(){
+    return timeUsed;
+}
 #endif
