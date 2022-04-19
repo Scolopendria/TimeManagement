@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 
+void print(std::vector<task> scheduleBook, bool ctr);
 std::string stdTimeRep(int timeRep);
 verStr* nav(std::string fullpath, verStr* gRoot);
 std::vector<task> initAttributes(std::vector<std::array<std::string, 2>> Attributes);
@@ -70,6 +71,7 @@ void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
         for (auto item: itemList){ // go through the list of items to schedule
             // initialize all the variables
             scheduleBook = initAttributes(sPath->sortAttributes()->getAttributesList());
+            print(scheduleBook, true);
             scheduled = false;
             autoStart = 1;
             
@@ -77,7 +79,7 @@ void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
                 scheduled = collide(
                     gRoot,
                     sPath,
-                    std::max(
+                    std::max( //hDev
                         caltime.minute_t + 1,
                         std::stoi(nav(item.fpath, gRoot)->get("start"))
                     ),
@@ -143,7 +145,7 @@ bool collide(
 ){
     //initializations
     int ceilValue{startCeiling}, floorValue{1440},
-        totalUsedTime{item.timeLeft}, allocatedTime, nextHead;
+        totalUsedTime{item.timeLeft + 1}, allocatedTime, nextHead;
     std::size_t iter{0}, ceiling, floor, slider;
     auto superstoi = [](std::string str){
         if (str == "NULL") return 0;
@@ -165,16 +167,22 @@ bool collide(
     // if true, that means scheduling is in open space
     // and ceiling is set to the item above it
     if (nextHead > start) ceiling--;
+    std::cout << iter << " " << ceiling << " " << floor <<"\n";
     //find top boulder
     while (ceiling != std::string::npos){
         if (
             nav(scheduleBook[ceiling].getName(), gRoot)->get("start") == "NULL" &&
-            startCeiling >
+            startCeiling <
             scheduleBook[ceiling].getEnd() +
             superstoi(nav(scheduleBook[ceiling].getName(), gRoot)->get("timeMarginEnd"))
         ){ ceiling--; } else break;
     }
-    if (ceiling != std::string::npos){
+    if (
+        ceiling != std::string::npos &&
+        startCeiling <
+        scheduleBook[ceiling].getEnd() +
+        superstoi(nav(scheduleBook[ceiling].getName(), gRoot)->get("timeMarginEnd"))
+    ){
         ceilValue =
             scheduleBook[ceiling].getEnd() +
             superstoi(nav(scheduleBook[ceiling].getName(), gRoot)->get("timeMarginEnd"));
@@ -192,6 +200,9 @@ bool collide(
             1 + scheduleBook[slider].getTime() +
             superstoi(nav(scheduleBook[slider].getName(), gRoot)->get("timeMarginEnd"));
     }
+
+    std::cout << iter << " " << ceiling << " " << floor <<"\n";
+    std::cout << "ceilValue: " << ceilValue << " floorValue: " << floorValue << std::endl;
     // if time is not enough, find LP element and chuck it
     // if lowest element is boulder, reschedule disregarding the boulder
     // chuck not implemented 
@@ -320,9 +331,12 @@ std::string stdTimeRep(int timeRep){
     return ss.str();
 }
 
-// void print(std::vector <std::array<std::string, 2>> const &a){
-//    std::cout << "The vector elements are : ";
-//    for(int i=0; i < a.size(); i++) std::cout << startTime(a[i][0]) << ' ';
-// }
+void print(std::vector<task> scheduleBook, bool ctr){
+    if (ctr) std::cout << "Round start:\n";
+    else std::cout << "Round end\n";
+    for (auto t : scheduleBook)
+        std::cout << t.getName() << ": " << t.getFullStdTime() << "\n";
+    std::cout << "\n";
+}
 
 #endif

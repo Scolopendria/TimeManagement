@@ -1,27 +1,27 @@
 "Automatic Time Management"{
 	"linilly"{
 		"Goals"{
+			"piano"{
+				"start"="1020"
+			}
 			"example"{
 				"timeMarginEnd"="20"
 				"test"{
 				}
 			}
-			"piano"{
-				"start"="600"
-			}
 		}
 		"Schedule"{
 			"2022:4:19"{
-				"10:0-10:30"="Goals:piano"
-				"10:31-11:1"="Goals:example:test"
-				"11:2-11:32"="Goals:example"
-				"11:53-12:23"="Goals"
+				"14:19-14:49"="Goals:example"
+				"15:10-15:40"="Goals:example:test"
+				"15:41-16:11"="Goals"
+				"17:0-17:30"="Goals:piano"
 			}
 			"2022:4:20"{
-				"10:0-10:30"="Goals:example:test"
-				"10:31-11:1"="Goals:example"
-				"11:22-11:52"="Goals"
-				"11:53-12:23"="Goals:piano"
+				"0:1-0:31"="Goals:example"
+				"0:52-1:22"="Goals:example:test"
+				"1:23-1:53"="Goals"
+				"17:0-17:30"="Goals:piano"
 			}
 		}
 	}
