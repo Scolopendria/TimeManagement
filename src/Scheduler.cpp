@@ -34,7 +34,7 @@ std::vector<scheduleProgress> scheduleProgressCheck(
 void scheduler(MegaStr *mStr){
     bool ctr{false};
     Calendar caltime;
-    for (int i{0}; i < 4; i++){
+    for (int i{0}; i < 2; i++){
         caltime.init(i);
         for (auto &c : *mStr->vStr.getChildrenList()){
             schedule(
@@ -84,7 +84,7 @@ void schedule(
                 scheduled = collide(
                     gRoot,
                     sPath,
-                    caltime.minute_t,
+                    caltime.minute_t + 1,
                     item,
                     scheduleBook,
                     std::stoi(nav(item.fpath, gRoot)->get("start"))
@@ -98,7 +98,7 @@ void schedule(
                             scheduled = collide(
                                 gRoot,
                                 sPath,
-                                caltime.minute_t,
+                                caltime.minute_t + 1,
                                 item,
                                 scheduleBook,
                                 autoStart
@@ -112,7 +112,7 @@ void schedule(
                     scheduled = collide(
                         gRoot,
                         sPath,
-                        caltime.minute_t,
+                        caltime.minute_t + 1,
                         item,
                         scheduleBook,
                         autoStart
@@ -156,15 +156,15 @@ bool collide(
             scheduleBook[iter].getEnd() +
             superstoi(nav(
                 scheduleBook[iter].getName(),
-                gRoot)->get("timeMarginEnd")
-            ) < start
+                gRoot
+            )->get("timeMarginEnd")) < start
         ) { iter++; } else break;
     }
     floor = iter;
     ceiling = iter;
     if (iter == scheduleBook.size()) ctr = 1440;
     else ctr = (scheduleBook[ceiling].getStart());
-    if (start < ctr) ceiling--;
+    if (ctr > start) ceiling--;
     //find top boulder
     while (ceiling != std::string::npos){
         if (
@@ -175,8 +175,8 @@ bool collide(
             scheduleBook[ceiling].getEnd() +
             superstoi(nav(
                 scheduleBook[ceiling].getName(),
-                gRoot)->get("timeMarginEnd")
-            ) < startCeiling
+                gRoot
+            )->get("timeMarginEnd")) > startCeiling
         ){ ceiling--; } else break;
     }
     if (ceiling != std::string::npos){
@@ -184,10 +184,9 @@ bool collide(
             scheduleBook[ceiling].getEnd() +
             superstoi(nav(
                 scheduleBook[ceiling].getName(),
-                gRoot)->get("timeMarginEnd")
-            );
+                gRoot
+            )->get("timeMarginEnd"));
     }
-
     //find bottom boulder
     while (floor != scheduleBook.size()){
         if (
@@ -198,13 +197,12 @@ bool collide(
         ){ floor++; } else break;
     }
     if (floor != scheduleBook.size()) floorValue = scheduleBook[floor].getStart();
-    //calculate total time available to work with
+    //calculate allocatedTime and totalUsedTime
     allocatedTime = floorValue - ceilValue;
-    //calculate time of all tasks invoved (totalTime = top + bottom + self.time)
     for (slider = ceiling + 1; slider < floor; slider++)
         totalUsedTime += scheduleBook[slider].getTime();
-    //if time is not enough find the lowest priority element including that of boulders and chuck it
-    // chuck not fully implemented //add self-restrictive control for 'start' support
+    //if time is not enough find the lowest priority element (including that of boulders) and chuck it
+    // chuck not fully implemented // add self-restrictive control for support of 'start'
     if (allocatedTime > totalUsedTime){
         for (slider = ceiling + 1; slider < iter; slider++){
             sPath->deleteAttribute(scheduleBook[slider].getFullStdTime());
@@ -212,14 +210,21 @@ bool collide(
                 stdTimeRep(ceilValue) + "-" + stdTimeRep(ceilValue + scheduleBook[slider].getTime()),
                 scheduleBook[slider].getName()
             );
-            ceilValue += scheduleBook[slider].getTime() + 1;
+            ceilValue +=
+                1 + scheduleBook[slider].getTime() +
+                superstoi(nav(
+                    scheduleBook[slider].getName(),
+                    gRoot
+                )->get("timeMarginEnd"));
         }
 
         sPath->attribute(
             stdTimeRep(ceilValue) + "-" + stdTimeRep(ceilValue + item.timeLeft),
             item.fpath
         );
-        ceilValue += item.timeLeft + 1;
+        ceilValue +=
+            1 + item.timeLeft +
+            superstoi(nav(item.fpath, gRoot)->get("timeMarginEnd"));
 
         for (slider = iter; slider < floor; slider++){
             sPath->deleteAttribute(scheduleBook[slider].getFullStdTime());
@@ -227,11 +232,16 @@ bool collide(
                 stdTimeRep(ceilValue) + "-" + stdTimeRep(ceilValue + scheduleBook[slider].getTime()),
                 scheduleBook[slider].getName()
             );
-            ceilValue += scheduleBook[slider].getTime() + 1;
+            ceilValue +=
+                1 + scheduleBook[slider].getTime() +
+                superstoi(nav(
+                    scheduleBook[slider].getName(),
+                    gRoot
+                )->get("timeMarginEnd"));
         }
         return true;
     }
-    //recalculate, if lowest priority is itself return false
+    //recalculate, if item is lowest prioirty return false
     return false;
 }
 
