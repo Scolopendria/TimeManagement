@@ -49,7 +49,7 @@ void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
     // cascadeAttributes = off, rescheduling = off, autoDeclarations = off
     // decides when to schedule in a day
     bool scheduled;
-    int autoStart, ctr{0};
+    int autoStart;
     std::vector<task> scheduleBook;
     auto itemList = scheduleProgressCheck(
         gRoot,
@@ -127,10 +127,6 @@ void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
             std::string{},
             std::vector<std::array<std::string, 2>>{}
         );
-        if (ctr++ > 7){
-            std::cout << "forced clear" << std::endl;
-            itemList.clear();
-        }
     }
 }
 
@@ -164,11 +160,14 @@ bool collide(
     if (nextHead > start) ceiling--;
     //find top boulder
     while (ceiling != std::string::npos){
-        if (nav(scheduleBook[ceiling].getName(), gRoot)->get("start") == "NULL") ceiling--;
+        if (
+            nav(scheduleBook[ceiling].getName(), gRoot)->get("start") == "NULL" &&
+            ceilValue < scheduleBook[ceiling].getStart()
+        ) ceiling--;
         else break;
     }
     if (ceiling != std::string::npos){
-        ceilValue = std::max(
+        ceilValue = std::max( //hDev
             ceilValue,
             scheduleBook[ceiling].getEnd() +
             ultraStoi(nav(scheduleBook[ceiling].getName(), gRoot)->get("timeMarginEnd"), 0)
@@ -190,7 +189,6 @@ bool collide(
     // if time is not enough, find LP element and chuck it
     // if lowest element is boulder, reschedule disregarding the boulder
     // chuck not implemented 
-    // add self-restrictive control for support of 'start'
     if (allocatedTime > totalUsedTime){
         for (slider = ceiling + 1; slider < iter; slider++){
             sPath->deleteAttribute(scheduleBook[slider].getFullStdTime());
@@ -236,28 +234,50 @@ std::vector<scheduleProgress> scheduleProgressCheck(
     std::string parentPath,
     std::vector<std::array<std::string, 2>> cascadeAttributes
 ){ // decides whether to schedule for a day
+    auto pass = [](std::string str, std::string defStr){
+        if (str == "NULL") return defStr;
+        return str;
+    };
     // initialize fullpath
     std::string fullpath{parentPath};
     if (fullpath != ""){ fullpath += ":"; } fullpath += vStr->getName();
     // general initializations
-    bool schedule = ultraStoi(vStr->get("priority"), 70) > std::experimental::randint(0, 99);
-    std::string taskType{}, taskDate{};
-    scheduleProgress pItem{fullpath};
+    scheduleProgress item{fullpath};
+    item.timeLeft = ultraStoi(vStr->get("time"), 30);
+    bool 
+        repeatCondition{false},
+        schedule{ultraStoi(vStr->get("priority"), 95) > std::experimental::randint(0, 99)};
+        
+    std::string 
+        taskType{pass(vStr->get("type"), "task")},
+        taskDate{pass(vStr->get("date"), caltime.baseDate)};
     std::vector<scheduleProgress> itemList, pList;
     auto scheduleBook{initAttributes(sPath->sortAttributes()->getAttributesList())};
-    // default values initialization
-    pItem.timeLeft = ultraStoi(vStr->get("time"), 30);
-    
-    // condition checks.. figure whether to schedule task for given date
-    // schedule progress (timeLeft) calculations
+
+    // schedule progress (timeLeft) calculations also functions as wipeout currently
     for (auto t : scheduleBook){
         if (t.getName() == fullpath){
-            if (pItem.timeLeft < t.getTime()) sPath->deleteAttribute(t.getFullStdTime());
-            else pItem.timeLeft -= t.getTime();
+            if (item.timeLeft < t.getTime()) sPath->deleteAttribute(t.getFullStdTime());
+            else item.timeLeft -= t.getTime();
         }
     }
-    // store Item into itemList and insert itemList of child Itemlists
-    if (pItem.timeLeft > 0) itemList.push_back(pItem);
+    
+    // condition checks.. figure whether to schedule task for given date
+    if (schedule){
+        if (taskType == "task"){
+            if (taskDate == caltime.strDate){
+                if (item.timeLeft > 0) itemList.push_back(item);
+            }
+        } else if (taskType == "chore") {
+            if (repeatCondition){
+                if (item.timeLeft > 0) itemList.push_back(item);
+            }
+        } else {
+            std::cout << "Error type" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+    // insert child Itemlist into itemList 
     for (auto &c : *vStr->getChildrenList()){
         pList = scheduleProgressCheck(&c, sPath, caltime, fullpath, cascadeAttributes);
         itemList.insert(itemList.end(), pList.begin(), pList.end());

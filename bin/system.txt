@@ -2,32 +2,25 @@
 	"linilly"{
 		"Goals"{
 			"piano"{
-				"start"="1020"
+				"start"="720"
 			}
 			"example"{
 				"timeMarginEnd"="20"
 				"test"{
+					"start"="1020"
 				}
 			}
 		}
 		"Schedule"{
 			"2022:4:19"{
-				"17:0-17:30"="Goals:piano"
-				"17:30-18:0"="Goals:example:test"
-				"18:1-18:31"="Goals:example"
-				"18:52-19:22"="Goals"
+				"19:20-19:50"="Goals:example"
+				"20:11-20:41"="Goals"
+				"22:0-22:30"="Goals:example:test"
+				"23:20-23:50"="Goals:piano"
 			}
 			"2022:4:20"{
-				"0:1-0:31"="Goals:example:test"
-				"0:32-1:2"="Goals:example"
-				"1:23-1:53"="Goals"
-				"17:31-18:1"="Goals:piano"
 			}
 			"2022:4:21"{
-				"0:1-0:31"="Goals:example:test"
-				"0:32-1:2"="Goals:example"
-				"1:23-1:53"="Goals"
-				"17:31-18:1"="Goals:piano"
 			}
 		}
 	}
