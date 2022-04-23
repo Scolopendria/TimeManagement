@@ -9,12 +9,27 @@
 //get handleUser capable of receiving special characters ('\' -> '\\', '"' -> '\"', ':' -> '\:', etc...)
 //store input and cleanse them 
 //linilly !quit does not print unnecessary middle commands
-//add functionality to handle terminal arguments like run: "./TM_Main linilly !getProfficiency !quit" or "./TM_Main !auto" 
+//add functionality to handle terminal arguments like run:
+//"./TM_Main linilly !getProfficiency !quit" or "./TM_Main !auto" 
+//embed handleUser into Main
+//clean up this function with strSwitch and fp principles
+// void func(){
+//     std::cout << "hello" << std::endl;
+// }
+
+// void command(){
+//     std::cout << "world" << std::endl;
+// }
+
 void handleUser(MegaStr *mStr){
     bool ctr{false}, gate[2]{true, true};
     std::string str[2];
     verStr* currentLocation;
-
+    
+    // strSwitch switcher{func};
+    // switcher.add(switchPair{"bye", command});
+    // switcher.match("bye");
+    // add a switch class and command style format
     while (gate[0]){
         gate[1] = true;
         std::cout << "Your name: ";
@@ -55,7 +70,7 @@ void handleUser(MegaStr *mStr){
                 if (str[0] == "attribute") currentLocation->deleteAttribute(str[1]);
                 else if (str[0] == "child") currentLocation->deleteChild(str[1]);
                 else std::cout << "Invalid type" << std::endl;
-            } else if (str[0] == "!view") std::cout << currentLocation->get(true, true) << std::endl;
+            } else if (str[0] == "!view") std::cout << currentLocation->getView() << std::endl;
             else if (str[0] == "!help") std::cout << "Go read the source code." << std::endl;
             else std::cout << "Command does not exist. !help for more." << std::endl;
         }

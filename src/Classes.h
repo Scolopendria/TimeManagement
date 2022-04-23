@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <functional>
 
 class verStr{
     private:
@@ -29,7 +30,7 @@ class verStr{
         // view class
         std::string getName();
         std::string format();
-        std::string get(bool __ATTRIBUTES, bool __CHILDREN);
+        std::string getView();
         // command class
         verStr* attribute(std::string attrName, std::string attrValue);
         verStr* child(std::string childName, bool &t);
@@ -89,8 +90,30 @@ class task{
         std::string getFullStdTime();
 };
 
+class switchPair{
+    private:
+        std::string name{};
+        std::function<void()> func{nullptr};
+    public:
+        switchPair(std::string term, std::function<void()> command);
+        bool query(std::string term);
+};
+
+class strSwitch{
+    private:
+        std::function<void()> func{nullptr};
+        std::vector<switchPair> list;
+    public:
+        strSwitch(std::function<void()> defaultFunction);
+        strSwitch* add(switchPair element);
+        void match(std::string term);
+};
+
+
+
 #include "VerStr.cpp"
 #include "MegaStr.cpp"
 #include "SchedClasses.cpp"
+#include "strSwitch.cpp"
 
 #endif

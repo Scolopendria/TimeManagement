@@ -3,6 +3,8 @@
 #include "headers.h"
 #include <iostream>
 
+// introduece modularity with namespaces
+
 int main(){ // Does not handle corrupted file contents while
             // Like expecting a number, but receives junk
             // Improve corrupted file handling

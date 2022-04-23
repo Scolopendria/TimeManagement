@@ -8,6 +8,14 @@
 #include <experimental/random>
 
 //void print(std::vector<task> scheduleBook);
+// introduce some task-splitting one-time-use functions to help organize code
+// put converters in a namespace
+// use more hierachy task organization
+// better use of lambda functions
+// consider rewrite
+// std::vector<scheduleProgress> progress(output of linearization)
+// fulfillRequirements()
+// put throwError into its own namespace
 std::string stdTimeRep(int timeRep);
 verStr* nav(std::string fullpath, verStr* gRoot);
 int ultraStoi(std::string str, int def);
@@ -22,19 +30,23 @@ bool collide(
     std::vector<task> scheduleBook,
     int start
 );
-std::vector<scheduleProgress> scheduleProgressCheck(
+std::vector<scheduleProgress> linearization(
     verStr *vStr,
     verStr *sPath,
     Calendar caltime,
     std::string parentPath,
     std::vector<std::array<std::string, 2>> cascadeAttributes
 );
+std::vector<scheduleProgress> purge(std::vector<scheduleProgress>);
 
+// maybe shift to embedded function in megaStr
+// or return a whole tail to be attached
 void scheduler(MegaStr *mStr){
     bool ctr{false};
     Calendar caltime;
     for (int i{0}; i < 3; i++){
         caltime.init(i);
+        //currently not fp/hybrid style
         for (auto &c : *mStr->vStr.getChildrenList()){
             schedule(
                 c.child("Goals", ctr),
@@ -45,19 +57,22 @@ void scheduler(MegaStr *mStr){
     }
 }
 
+
 void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
     // cascadeAttributes = off, rescheduling = off, autoDeclarations = off
     // decides when to schedule in a day
     bool scheduled;
     int autoStart;
     std::vector<task> scheduleBook;
-    auto itemList = scheduleProgressCheck(
-        gRoot,
-        sPath,
-        caltime,
-        std::string{},
-        std::vector<std::array<std::string, 2>>{}
-    );
+    auto itemList = purge(
+        linearization(
+            gRoot,
+            sPath,
+            caltime,
+            std::string{},
+            std::vector<std::array<std::string, 2>>{}
+        ))
+    ;
 
     // Auto mark past tasks as "done"
     // log to history
@@ -120,7 +135,7 @@ void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
             }
         }
         // reinitialize itemList -list of tasks left to be scheduled
-        itemList = scheduleProgressCheck(
+        itemList = linearization(
             gRoot,
             sPath,
             caltime,
@@ -227,20 +242,25 @@ bool collide(
     return false;
 } // 100 lines total, 45 lines long without comments and formatting
 
-std::vector<scheduleProgress> scheduleProgressCheck(
+std::vector<scheduleProgress> linearization(
     verStr *vStr,
     verStr *sPath,
     Calendar caltime,
     std::string parentPath,
     std::vector<std::array<std::string, 2>> cascadeAttributes
 ){ // decides whether to schedule for a day
+    // lambda func initialization
     auto pass = [](std::string str, std::string defStr){
         if (str == "NULL") return defStr;
         return str;
     };
     // initialize fullpath
-    std::string fullpath{parentPath};
-    if (fullpath != ""){ fullpath += ":"; } fullpath += vStr->getName();
+    std::string fullpath{
+        [parentPath, vStr]{
+            if (parentPath == "") return vStr->getName();
+            return parentPath + ":" + vStr->getName();
+        }()
+    };
     // general initializations
     scheduleProgress item{fullpath};
     item.timeLeft = ultraStoi(vStr->get("time"), 30);
@@ -254,6 +274,12 @@ std::vector<scheduleProgress> scheduleProgressCheck(
     std::vector<scheduleProgress> itemList, pList;
     auto scheduleBook{initAttributes(sPath->sortAttributes()->getAttributesList())};
 
+    /*
+    * Refactor all things that require calculation to purge
+    * Set and pass auto declarations and also pass special dependency trees and ghost declarations
+    *
+    * 
+    */
     // schedule progress (timeLeft) calculations also functions as wipeout currently
     for (auto t : scheduleBook){
         if (t.getName() == fullpath){
@@ -279,11 +305,15 @@ std::vector<scheduleProgress> scheduleProgressCheck(
     }
     // insert child Itemlist into itemList 
     for (auto &c : *vStr->getChildrenList()){
-        pList = scheduleProgressCheck(&c, sPath, caltime, fullpath, cascadeAttributes);
+        pList = linearization(&c, sPath, caltime, fullpath, cascadeAttributes);
         itemList.insert(itemList.end(), pList.begin(), pList.end());
     }
 
     return itemList;
+}
+
+std::vector<scheduleProgress> purge(std::vector<scheduleProgress>){
+
 }
 
 std::vector<task> initAttributes(std::vector<std::array<std::string, 2>> Attributes){

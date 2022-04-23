@@ -97,19 +97,15 @@ std::string verStr::format(){
     return pStr;
 }
 
-std::string verStr::get(bool __ATTRIBUTES, bool __CHILDREN){
-    std::string pStr{Name + ":\n"};
+std::string verStr::getView(){
+    std::string pStr{"\n    " + Name + ":\n\tAttributes:\n"};
 
-    if (__ATTRIBUTES){
-        for (auto &ID_pair : attributes)
-            (((pStr += ID_pair[0]) += ": ") += ID_pair[1]) += "\n";
-    }
-
-    if (__CHILDREN){
-        for (auto &c : children)
-            (pStr += c.getName()) += "\n";
-    }
-
+    for (auto ID_pair : attributes)
+        pStr = pStr + "\t\t" + ID_pair[0] + ": " + ID_pair[1] + "\n";
+    pStr = pStr + "\tTasks:\n";
+    for (auto c : children)
+        pStr = pStr + "\t\t" + c.getName() + "\n";
+    
     return pStr;
 }
 
