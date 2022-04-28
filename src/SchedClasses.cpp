@@ -34,8 +34,25 @@ void Calendar::init(int offset){
     if (offset) minute_t = 0;
 };
 
-scheduleProgress::scheduleProgress(std::string fullpath){
-    fpath = fullpath;
+std::string attributeContainer::get(std::string name){
+    for(auto&& ID_pair : cascadeAttributes)
+        if (name == ID_pair[0]) return ID_pair[1];
+    return "NULL";
+}
+
+attributeContainer* attributeContainer::set(std::string name, std::string value){
+    return set(std::array<std::string, 2>{name, value});
+}
+
+attributeContainer* attributeContainer::set(std::array<std::string, 2> ID_pair){
+    for (int iter{};  iter != cascadeAttributes.size(); iter++)
+        if (ID_pair[0] == cascadeAttributes[iter][0]) cascadeAttributes.erase(cascadeAttributes.begin() + iter);
+    cascadeAttributes.push_back(ID_pair);
+    return this;
+}
+
+scheduleProgress::scheduleProgress(std::string fullpath__){
+    fullpath = fullpath__;
 }
 
 task::task(std::string taskName, int start, int end){
@@ -57,6 +74,7 @@ std::string task::getName(){
 std::string task::getFullStdTime(){
     return stdTime;
 }
+
 int task::getStart(){
     return startTime;
 }
@@ -65,7 +83,8 @@ int task::getEnd(){
     return endTime;
 }
 
-int task::getTime(){
+int task::getTimeUsed(){
     return timeUsed;
 }
+
 #endif

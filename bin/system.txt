@@ -4,23 +4,19 @@
 			"piano"{
 				"start"="720"
 			}
-			"example"{
-				"timeMarginEnd"="20"
-				"test"{
-					"start"="1020"
-				}
-			}
 		}
 		"Schedule"{
-			"2022:4:19"{
-				"19:20-19:50"="Goals:example"
-				"20:11-20:41"="Goals"
-				"22:0-22:30"="Goals:example:test"
-				"23:20-23:50"="Goals:piano"
+			"2022:4:27"{
+				"19:46-20:16"="Goals"
+				"20:16-20:46"="Goals:piano"
 			}
-			"2022:4:20"{
+			"2022:4:28"{
+				"0:1-0:31"="Goals"
+				"0:31-1:1"="Goals:piano"
 			}
-			"2022:4:21"{
+			"2022:4:29"{
+				"0:1-0:31"="Goals"
+				"0:31-1:1"="Goals:piano"
 			}
 		}
 	}

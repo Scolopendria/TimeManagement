@@ -16,12 +16,7 @@
 // std::vector<scheduleProgress> progress(output of linearization)
 // fulfillRequirements()
 // put throwError into its own namespace
-std::string stdTimeRep(int timeRep);
-verStr* nav(std::string fullpath, verStr* gRoot);
-int ultraStoi(std::string str, int def);
-std::vector<task> initAttributes(std::vector<std::array<std::string, 2>> Attributes);
-void scheduler(MegaStr *mStr);
-void schedule(verStr *gRoot, verStr *sPath, Calendar caltime);
+// big naming scheme change
 bool collide(
     verStr *gRoot,
     verStr *sPath,
@@ -30,14 +25,24 @@ bool collide(
     std::vector<task> scheduleBook,
     int start
 );
+int ultraStoi(std::string str, int def); //deprecate
+std::string stdTimeRep(int timeRep);
+verStr* nav(std::string fullpath, verStr* gRoot); //deprecate??
+std::vector<task> initAttributes(std::vector<std::array<std::string, 2>> Attributes); //type of converter
+void scheduler(MegaStr *mStr);
+void schedule(verStr *gRoot, verStr *sPath, Calendar caltime);
+std::vector<scheduleProgress> demote(std::vector<scheduleProgress> itemList);
+std::vector<scheduleProgress> smartPass(std::vector<scheduleProgress> itemList);
 std::vector<scheduleProgress> linearization(
     verStr *vStr,
-    verStr *sPath,
-    Calendar caltime,
     std::string parentPath,
-    std::vector<std::array<std::string, 2>> cascadeAttributes
+    attributeContainer cascadeAttributes,
+    Calendar caltime //needed for the date and related info
 );
-std::vector<scheduleProgress> purge(std::vector<scheduleProgress>);
+std::vector<scheduleProgress> purge(std::vector<scheduleProgress> itemList, verStr* sPath);
+std::vector<scheduleProgress> trim(std::vector<scheduleProgress> itemList, verStr* sPath);
+// demote
+//smartPass
 
 // maybe shift to embedded function in megaStr
 // or return a whole tail to be attached
@@ -47,6 +52,7 @@ void scheduler(MegaStr *mStr){
     for (int i{0}; i < 3; i++){
         caltime.init(i);
         //currently not fp/hybrid style
+        //use mStr.forge(new vStr{} or something)
         for (auto &c : *mStr->vStr.getChildrenList()){
             schedule(
                 c.child("Goals", ctr),
@@ -57,28 +63,36 @@ void scheduler(MegaStr *mStr){
     }
 }
 
-
 void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
-    // cascadeAttributes = off, rescheduling = off, autoDeclarations = off
-    // decides when to schedule in a day
+    //linearization, trim //last, demote, purge, smartPass, (re)Schedule, collide --implement hybrid paradigm
+    //demote and smartPass need reverse tree assistance or some other mechanism
+    //embed necessary requirement checkers into each function and a strict requirement checker
+
+
+    // functions roles and responsibilities
+    //linearization: to convert tree to straight vector information // done // only need to be used once
+    //trim: to handle events past                                   // last // only need to be called once
+    //demote: to deal with impossible requirements and prioities    // current focus    // deals with priorities and reqs
+    //purge: scrap tasks tat don't meet requirements                // half done        // deals with modified reqs and sPath
+    //smartPass: organize tasks into easier schedulable pieces      // avoid the ..plus marginEnd shenanigans // demote can undo this (known as shatter)// breakdown() for view
+    //                                                              // deals with modified reqs
+    //scedule: actually schedule the task                           // refactor // deals with modified reqs and sPath
+    //collide: use smart time alloc to maximize success rate instead of looping through until sudden success // half done
     bool scheduled;
     int autoStart;
     std::vector<task> scheduleBook;
-    auto itemList = purge(
-        linearization(
+    auto itemList = /*smartPass(*/purge( // let purge take in itemlist and sPath in one object
+        trim(
+            linearization(
             gRoot,
-            sPath,
-            caltime,
             std::string{},
-            std::vector<std::array<std::string, 2>>{}
-        ))
-    ;
-
-    // Auto mark past tasks as "done"
-    // log to history
-    // mark chore as done -prevent rescheduling (something like "done"="<date>") tells
-    // atm to ignore task
-    // Wipe unwanted scheduled tasks (first?)
+            attributeContainer{},
+            caltime
+            ),
+            sPath
+        ),
+        sPath
+    );//)
 
     while(!itemList.empty()){
         for (auto item: itemList){ // go through the list of items to schedule
@@ -86,62 +100,39 @@ void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
             scheduleBook = initAttributes(sPath->sortAttributes()->getAttributesList());
             //print(scheduleBook);
             scheduled = false;
-            autoStart = 1;
-            
-            if (nav(item.fpath, gRoot)->get("start") != "NULL"){
-                scheduled = collide(
+            autoStart = std::stoi(item.attributes.get("start"));
+            for (auto t : scheduleBook){
+                if (autoStart > caltime.minute_t){
+                    // condition checks.. behaviour and dependancies
+                    // check if scheduling before the next task's start time
+                    // if true, that means autoStart is in open time
+                    if (autoStart < t.getStart()){
+                        scheduled = collide(
+                            gRoot,
+                            sPath,
+                            caltime.minute_t + 1,
+                            item,
+                            scheduleBook,
+                            autoStart
+                        );
+                        if (scheduled) break;
+                    }
+                }
+                autoStart = t.getEnd();
+            }
+            if (!scheduled){
+                scheduled = collide( //scheduled unused here // combine three occurances of collide into one
                     gRoot,
                     sPath,
-                    std::max( //hDev
-                        caltime.minute_t + 1,
-                        std::stoi(nav(item.fpath, gRoot)->get("start"))
-                    ),
+                    caltime.minute_t + 1,
                     item,
                     scheduleBook,
-                    std::stoi(nav(item.fpath, gRoot)->get("start"))
+                    autoStart
                 );
-            } else { // set autoStart
-                for (auto t : scheduleBook){
-                    if (autoStart > caltime.minute_t){
-                        // condition checks.. behaviour and dependancies
-                        // check if scheduling before the next task's start time
-                        // if true, that means autoStart is in open time
-                        if (autoStart < t.getStart()){
-                            scheduled = collide(
-                                gRoot,
-                                sPath,
-                                caltime.minute_t + 1,
-                                item,
-                                scheduleBook,
-                                autoStart
-                            );
-                            if (scheduled) break;
-                        }
-                    }
-                    autoStart =
-                        t.getEnd() +
-                        ultraStoi(nav(t.getName(), gRoot)->get("timeMarginEnd"), 0);
-                }
-                if (!scheduled){
-                    scheduled = collide(
-                        gRoot,
-                        sPath,
-                        caltime.minute_t + 1,
-                        item,
-                        scheduleBook,
-                        autoStart
-                    );
-                }
             }
         }
         // reinitialize itemList -list of tasks left to be scheduled
-        itemList = linearization(
-            gRoot,
-            sPath,
-            caltime,
-            std::string{},
-            std::vector<std::array<std::string, 2>>{}
-        );
+        itemList = smartPass(purge(demote(itemList), sPath));
     }
 }
 
@@ -152,18 +143,15 @@ bool collide(
     scheduleProgress item,
     std::vector<task> scheduleBook,
     int start
-){
+){//needs hDev and other paradigm alignment
     //initializations
     int ceilValue{startCeiling}, floorValue{1440},
-        totalUsedTime{item.timeLeft + 1}, allocatedTime, nextHead;
-    std::size_t iter{0}, ceiling, floor, slider;
+        totalUsedTime{std::stoi(item.attributes.get("time")) + 1}, allocatedTime, nextHead;
+    std::size_t iter{}, ceiling, floor, slider;
     // set iters
     while (iter != scheduleBook.size()){
-        if (
-            start >
-            scheduleBook[iter].getEnd() +
-            ultraStoi(nav(scheduleBook[iter].getName(), gRoot)->get("timeMarginEnd"), 0)
-        ) { iter++; } else break;
+        if (start >= scheduleBook[iter].getEnd()) iter++; //trying to schedule before
+        else break;
     }
     floor = iter;
     ceiling = iter;
@@ -176,30 +164,24 @@ bool collide(
     //find top boulder
     while (ceiling != std::string::npos){
         if (
-            nav(scheduleBook[ceiling].getName(), gRoot)->get("start") == "NULL" &&
+            nav(scheduleBook[ceiling].getName(), gRoot)->get("strict") == "NULL" &&
             ceilValue < scheduleBook[ceiling].getStart()
         ) ceiling--;
         else break;
     }
-    if (ceiling != std::string::npos){
-        ceilValue = std::max( //hDev
-            ceilValue,
-            scheduleBook[ceiling].getEnd() +
-            ultraStoi(nav(scheduleBook[ceiling].getName(), gRoot)->get("timeMarginEnd"), 0)
-        );
-    }
+    if (ceiling != std::string::npos)
+        ceilValue = std::max(ceilValue, scheduleBook[ceiling].getEnd());
+
     //find bottom boulder
     while (floor != scheduleBook.size()){
-        if (nav(scheduleBook[floor].getName(), gRoot)->get("start") == "NULL") floor++;
+        if (nav(scheduleBook[floor].getName(), gRoot)->get("strict") == "NULL") floor++;
         else break;
     }
     if (floor != scheduleBook.size()) floorValue = scheduleBook[floor].getStart();
     //calculate allocatedTime and totalUsedTime
     allocatedTime = floorValue - ceilValue;
     for (slider = ceiling + 1; slider < floor; slider++){
-        totalUsedTime +=
-            1 + scheduleBook[slider].getTime() +
-            ultraStoi(nav(scheduleBook[slider].getName(), gRoot)->get("timeMarginEnd"), 0);
+        totalUsedTime += 1 + scheduleBook[slider].getTimeUsed();
     }
     // if time is not enough, find LP element and chuck it
     // if lowest element is boulder, reschedule disregarding the boulder
@@ -209,32 +191,26 @@ bool collide(
             sPath->deleteAttribute(scheduleBook[slider].getFullStdTime());
             sPath->attribute(
                 stdTimeRep(ceilValue) + "-" +
-                stdTimeRep(ceilValue + scheduleBook[slider].getTime()),
+                stdTimeRep(ceilValue + scheduleBook[slider].getTimeUsed()),
                 scheduleBook[slider].getName()
             );
-            ceilValue +=
-                1 + scheduleBook[slider].getTime() +
-                ultraStoi(nav(scheduleBook[slider].getName(), gRoot)->get("timeMarginEnd"), 0);
+            ceilValue += 1 + scheduleBook[slider].getTimeUsed();
         }
 
         sPath->attribute(
-            stdTimeRep(ceilValue) + "-" + stdTimeRep(ceilValue + item.timeLeft),
-            item.fpath
+            stdTimeRep(ceilValue) + "-" + stdTimeRep(ceilValue + std::stoi(item.attributes.get("time"))),
+            item.fullpath
         );
-        ceilValue +=
-            1 + item.timeLeft +
-            ultraStoi(nav(item.fpath, gRoot)->get("timeMarginEnd"), 0);
+        ceilValue += 1 + std::stoi(item.attributes.get("time"));
 
         for (slider = iter; slider < floor; slider++){
             sPath->deleteAttribute(scheduleBook[slider].getFullStdTime());
             sPath->attribute(
                 stdTimeRep(ceilValue) + "-" +
-                stdTimeRep(ceilValue + scheduleBook[slider].getTime()),
+                stdTimeRep(ceilValue + scheduleBook[slider].getTimeUsed()),
                 scheduleBook[slider].getName()
             );
-            ceilValue +=
-                1 + scheduleBook[slider].getTime() +
-                ultraStoi(nav(scheduleBook[slider].getName(), gRoot)->get("timeMarginEnd"), 0);
+            ceilValue += 1 + scheduleBook[slider].getTimeUsed();
         }
         return true;
     }
@@ -242,17 +218,79 @@ bool collide(
     return false;
 } // 100 lines total, 45 lines long without comments and formatting
 
+
+std::vector<scheduleProgress> smartPass(std::vector<scheduleProgress> itemList){
+    return itemList;
+}
+
+std::vector<scheduleProgress> demote(std::vector<scheduleProgress> itemList){// deals with priorities and requirements
+    return itemList;
+}
+
+std::vector<scheduleProgress> purge(std::vector<scheduleProgress> itemList, verStr *sPath){// purges tasks that do not fit the requirements
+    auto stringify = [](int x){
+        std::stringstream ss;
+        ss << x;
+        return ss.str();
+    }; // store converters into a namespace (module)
+    auto find = [](std::vector<scheduleProgress> itemList, std::string fullpath){
+        int iter{};
+        while (iter < itemList.size()){
+            if (itemList[iter].fullpath == fullpath) return iter;
+            iter++;
+        }
+        return iter;
+    };
+
+    int ctr{};
+    std::string str{};
+    auto scheduleBook{initAttributes(sPath->sortAttributes()->getAttributesList())};
+
+    for (auto t : scheduleBook){
+        ctr = find(itemList, t.getName());
+        if (ctr != itemList.size()){
+            if (std::stoi(itemList[ctr].attributes.get("time")) < t.getTimeUsed()) sPath->deleteAttribute(t.getFullStdTime());
+            else itemList[ctr].attributes.set(
+                "time",
+                stringify(std::stoi(itemList[ctr].attributes.get("time")) - t.getTimeUsed())
+            );
+        } else sPath->deleteAttribute(t.getFullStdTime());
+    }
+
+    for (int iter{(int)itemList.size() - 1}; iter > -1; iter--){
+        str = itemList[iter].attributes.get("time");
+        std::cout << str << std::endl;
+        if (std::stoi(str) == 0) itemList.erase(itemList.begin() + iter);
+    }
+
+    return itemList;
+}
+
+std::vector<scheduleProgress> trim(std::vector <scheduleProgress> itemList, verStr* sPath){
+    return itemList;
+
+    // return pack{itemlist, sPath};
+}
+
 std::vector<scheduleProgress> linearization(
     verStr *vStr,
-    verStr *sPath,
-    Calendar caltime,
     std::string parentPath,
-    std::vector<std::array<std::string, 2>> cascadeAttributes
-){ // decides whether to schedule for a day
-    // lambda func initialization
-    auto pass = [](std::string str, std::string defStr){
-        if (str == "NULL") return defStr;
+    attributeContainer cascadeAttributes,
+    Calendar caltime
+){// supports type, date, time
+    //lambda function initialization
+    auto pass = [](std::string str, std::string defaultStr){
+        if (str == "NULL") return defaultStr;
         return str;
+    };
+    auto cascadeValueInit = [](
+        std::string attributeValue,
+        std::string cascadeValue,
+        std::string defaultStr
+    ){
+        if (attributeValue != "NULL") return attributeValue;
+        if (cascadeValue == "NULL") return defaultStr;
+        return cascadeValue;
     };
     // initialize fullpath
     std::string fullpath{
@@ -263,57 +301,72 @@ std::vector<scheduleProgress> linearization(
     };
     // general initializations
     scheduleProgress item{fullpath};
-    item.timeLeft = ultraStoi(vStr->get("time"), 30);
-    bool 
-        repeatCondition{false},
-        schedule{ultraStoi(vStr->get("priority"), 95) > std::experimental::randint(0, 99)};
-        
-    std::string 
-        taskType{pass(vStr->get("type"), "task")},
-        taskDate{pass(vStr->get("date"), caltime.baseDate)};
     std::vector<scheduleProgress> itemList, pList;
-    auto scheduleBook{initAttributes(sPath->sortAttributes()->getAttributesList())};
-
-    /*
-    * Refactor all things that require calculation to purge
-    * Set and pass auto declarations and also pass special dependency trees and ghost declarations
-    *
-    * 
-    */
-    // schedule progress (timeLeft) calculations also functions as wipeout currently
-    for (auto t : scheduleBook){
-        if (t.getName() == fullpath){
-            if (item.timeLeft < t.getTime()) sPath->deleteAttribute(t.getFullStdTime());
-            else item.timeLeft -= t.getTime();
-        }
-    }
-    
-    // condition checks.. figure whether to schedule task for given date
-    if (schedule){
-        if (taskType == "task"){
-            if (taskDate == caltime.strDate){
-                if (item.timeLeft > 0) itemList.push_back(item);
-            }
-        } else if (taskType == "chore") {
-            if (repeatCondition){
-                if (item.timeLeft > 0) itemList.push_back(item);
-            }
-        } else {
-            std::cout << "Error type" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-    }
-    // insert child Itemlist into itemList 
+    //non-cascade attributes
+    std::string time{pass(vStr->get("time"), "30")}, start{pass(vStr->get("start"), "1")};
+    //cascade attributes
+    //No trash value handling ***WARNING***
+    cascadeAttributes.set(
+        "type",
+        cascadeValueInit(
+            vStr->get("type"),
+            cascadeAttributes.get("type"),
+            "task"
+        )
+    )->set(
+        "date",
+        cascadeValueInit(
+            vStr->get("date"),
+            cascadeAttributes.get("date"),
+            caltime.baseDate
+        )
+    );
+    //apply attributes to item
+    item.attributes.set(std::string{"time"}, time
+    )->set(std::string{"start"}, start
+    )->set(std::string{"type"}, cascadeAttributes.get("type")
+    )->set(std::string{"date"}, cascadeAttributes.get("date"));
+    //store item into itemList
+    itemList.push_back(item);
+    //attach childLists into itemList
     for (auto &c : *vStr->getChildrenList()){
-        pList = linearization(&c, sPath, caltime, fullpath, cascadeAttributes);
+        pList = linearization(&c, fullpath, cascadeAttributes, caltime);
         itemList.insert(itemList.end(), pList.begin(), pList.end());
     }
 
     return itemList;
 }
 
-std::vector<scheduleProgress> purge(std::vector<scheduleProgress>){
+int ultraStoi(std::string str, int def){
+    if (str == "NULL") return def;
+    return std::stoi(str);
+};
 
+std::string stdTimeRep(int timeRep){
+    std::stringstream ss;
+    ss << timeRep / 60 << ":" << timeRep % 60;
+    return ss.str();
+}
+
+verStr* nav(std::string fullpath, verStr* gRoot){
+    bool ctr{false};
+    std::string path{fullpath};
+    std::string::size_type i{0};
+    verStr* vStr{gRoot};
+    //Special Adjustment for root ("Goals")
+    while (path[i] != ':' && i < path.length()) i++;
+    if (i == path.length()) return vStr;
+    path = path.substr(i + 1);
+
+    while (true){
+        i = 0;
+        while (path[i] != ':' && i < path.length()) i++;
+        if (i == path.length()) return vStr->child(path, ctr);
+        vStr = vStr->child(path.substr(0, i), ctr);
+        path = path.substr(i + 1);
+    }
+
+    return vStr;
 }
 
 std::vector<task> initAttributes(std::vector<std::array<std::string, 2>> Attributes){
@@ -339,39 +392,6 @@ std::vector<task> initAttributes(std::vector<std::array<std::string, 2>> Attribu
     
     return scheduleBook;
 }
-
-int ultraStoi(std::string str, int def){
-    if (str == "NULL") return def;
-    return std::stoi(str);
-};
-
-verStr* nav(std::string fullpath, verStr* gRoot){
-    bool ctr{false};
-    std::string path{fullpath};
-    std::string::size_type i{0};
-    verStr* vStr{gRoot};
-    //Special Adjustment for root ("Goals")
-    while (path[i] != ':' && i < path.length()) i++;
-    if (i == path.length()) return vStr;
-    path = path.substr(i + 1);
-
-    while (true){
-        i = 0;
-        while (path[i] != ':' && i < path.length()) i++;
-        if (i == path.length()) return vStr->child(path, ctr);
-        vStr = vStr->child(path.substr(0, i), ctr);
-        path = path.substr(i + 1);
-    }
-
-    return vStr;
-}
-
-std::string stdTimeRep(int timeRep){
-    std::stringstream ss;
-    ss << timeRep / 60 << ":" << timeRep % 60;
-    return ss.str();
-}
-
 // void print(std::vector<task> scheduleBook){
 //     for (auto t : scheduleBook)
 //         std::cout << t.getName() << ": " << t.getFullStdTime() << "\n";

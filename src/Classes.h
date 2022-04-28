@@ -67,11 +67,20 @@ class Calendar{
         std::string baseDate{};
 };
 
+class attributeContainer{
+    private:
+        std::vector<std::array<std::string, 2>> cascadeAttributes{};
+    public:
+        std::string get(std::string name);
+        attributeContainer* set(std::array<std::string, 2> ID_pair);
+        attributeContainer* set(std::string name, std::string value); //Overload
+};
+
 class scheduleProgress{
     public:
-        scheduleProgress(std::string fullpath);
-        int timeLeft{};
-        std::string fpath{};
+        scheduleProgress(std::string fullpath__);
+        std::string fullpath{};
+        attributeContainer attributes{};
 };
 
 class task{
@@ -85,7 +94,7 @@ class task{
         task(std::string taskName, int start, int end);
         int getStart();
         int getEnd();
-        int getTime();
+        int getTimeUsed();
         std::string getName();
         std::string getFullStdTime();
 };
@@ -102,7 +111,7 @@ class switchPair{
 class strSwitch{
     private:
         std::function<void()> func{nullptr};
-        std::vector<switchPair> list;
+        std::vector<switchPair> list{};
     public:
         strSwitch(std::function<void()> defaultFunction);
         strSwitch* add(switchPair element);

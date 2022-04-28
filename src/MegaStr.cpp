@@ -22,10 +22,10 @@ std::string MegaStr::getFile(){
     std::ifstream file("system.txt");
     if (!file.is_open()) return "\"Automatic Time Management\"{}";
 
-    std::ostringstream ss;
+    std::ostringstream ss{};
     ss << file.rdbuf();
-    std::string pStr{ss.str()};
     file.close();
+    std::string pStr{ss.str()};
 
     if (pStr.find_first_not_of(" \t\n\v\r") != std::string::npos) return pStr;
     return "\"Automatic Time Management\"{}";
