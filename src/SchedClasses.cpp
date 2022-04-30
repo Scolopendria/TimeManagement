@@ -43,9 +43,9 @@ std::string attributeContainer::get(std::string name){
 attributeContainer* attributeContainer::set(std::string name, std::string value){
     return set(std::array<std::string, 2>{name, value});
 }
-
+// all deletions done in reverse order
 attributeContainer* attributeContainer::set(std::array<std::string, 2> ID_pair){
-    for (int iter{};  iter != cascadeAttributes.size(); iter++)
+    for (int iter{(int)cascadeAttributes.size()-1};  iter > -1; iter--)
         if (ID_pair[0] == cascadeAttributes[iter][0]) cascadeAttributes.erase(cascadeAttributes.begin() + iter);
     cascadeAttributes.push_back(ID_pair);
     return this;

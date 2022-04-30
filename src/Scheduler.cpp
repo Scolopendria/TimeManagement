@@ -31,7 +31,7 @@ verStr* nav(std::string fullpath, verStr* gRoot); //deprecate??
 std::vector<task> initAttributes(std::vector<std::array<std::string, 2>> Attributes); //type of converter
 void scheduler(MegaStr *mStr);
 void schedule(verStr *gRoot, verStr *sPath, Calendar caltime);
-std::vector<scheduleProgress> demote(std::vector<scheduleProgress> itemList);
+std::vector<scheduleProgress> demote(std::vector<scheduleProgress> itemList, int loopCount);
 std::vector<scheduleProgress> smartPass(std::vector<scheduleProgress> itemList);
 std::vector<scheduleProgress> linearization(
     verStr *vStr,
@@ -79,7 +79,7 @@ void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
     //scedule: actually schedule the task                           // refactor // deals with modified reqs and sPath
     //collide: use smart time alloc to maximize success rate instead of looping through until sudden success // half done
     bool scheduled;
-    int autoStart;
+    int autoStart, loopCount = 0;
     std::vector<task> scheduleBook;
     auto itemList = /*smartPass(*/purge( // let purge take in itemlist and sPath in one object
         trim(
@@ -132,7 +132,7 @@ void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
             }
         }
         // reinitialize itemList -list of tasks left to be scheduled
-        itemList = smartPass(purge(demote(itemList), sPath));
+        itemList = smartPass(purge(demote(itemList, loopCount++), sPath));
     }
 }
 
@@ -212,7 +212,7 @@ bool collide(
             );
             ceilValue += 1 + scheduleBook[slider].getTimeUsed();
         }
-        return true;
+         return true;
     }
     //recalculate, if item is lowest prioirty return false
     return false;
@@ -223,7 +223,17 @@ std::vector<scheduleProgress> smartPass(std::vector<scheduleProgress> itemList){
     return itemList;
 }
 
-std::vector<scheduleProgress> demote(std::vector<scheduleProgress> itemList){// deals with priorities and requirements
+std::vector<scheduleProgress> demote(std::vector<scheduleProgress> itemList, int loopCount){// deals with priorities and requirements
+    auto stringify = [](int x){
+        std::stringstream ss;
+        ss << x;
+        return ss.str();
+    };
+
+    for (int iter{0}; iter != itemList.size(); iter++){
+        itemList[iter].attributes.set("priority", stringify(std::stoi(itemList[iter].attributes.get("priority")) - loopCount*36));
+    }
+
     return itemList;
 }
 
@@ -233,7 +243,7 @@ std::vector<scheduleProgress> purge(std::vector<scheduleProgress> itemList, verS
         ss << x;
         return ss.str();
     }; // store converters into a namespace (module)
-    auto find = [](std::vector<scheduleProgress> itemList, std::string fullpath){
+    auto find = [](std::vector<scheduleProgress> itemList, std::string fullpath){ //expensive!
         int iter{};
         while (iter < itemList.size()){
             if (itemList[iter].fullpath == fullpath) return iter;
@@ -258,9 +268,11 @@ std::vector<scheduleProgress> purge(std::vector<scheduleProgress> itemList, verS
     }
 
     for (int iter{(int)itemList.size() - 1}; iter > -1; iter--){
-        str = itemList[iter].attributes.get("time");
-        std::cout << str << std::endl;
-        if (std::stoi(str) == 0) itemList.erase(itemList.begin() + iter);
+        if (std::stoi(itemList[iter].attributes.get("time")) == 0) itemList.erase(itemList.begin() + iter);
+    }
+
+    for (int iter2{(int)itemList.size() - 1}; iter2 > -1; iter2--){
+        if (std::stoi(itemList[iter2].attributes.get("priority")) < 0) itemList.erase(itemList.begin() + iter2);
     }
 
     return itemList;
@@ -320,12 +332,20 @@ std::vector<scheduleProgress> linearization(
             cascadeAttributes.get("date"),
             caltime.baseDate
         )
+    )->set(
+        "priority",
+        cascadeValueInit(
+            vStr->get("priority"),
+            cascadeAttributes.get("priority"),
+            "1000"
+        )
     );
     //apply attributes to item
     item.attributes.set(std::string{"time"}, time
     )->set(std::string{"start"}, start
     )->set(std::string{"type"}, cascadeAttributes.get("type")
-    )->set(std::string{"date"}, cascadeAttributes.get("date"));
+    )->set(std::string{"date"}, cascadeAttributes.get("date")
+    )->set(std::string{"priority"}, cascadeAttributes.get("priority"));
     //store item into itemList
     itemList.push_back(item);
     //attach childLists into itemList
