@@ -13,7 +13,6 @@
 // use more hierachy task organization
 // better use of lambda functions
 // consider rewrite
-// std::vector<scheduleProgress> progress(output of linearization)
 // fulfillRequirements()
 // put throwError into its own namespace
 // big naming scheme change
@@ -25,14 +24,16 @@ bool collide(
     std::vector<task> scheduleBook,
     int start
 );
-int ultraStoi(std::string str, int def); //deprecate
+int ultraStoi(std::string str, int def); //deprecate??
+std::string stringify(int x);
 std::string stdTimeRep(int timeRep);
 verStr* nav(std::string fullpath, verStr* gRoot); //deprecate??
 std::vector<task> initAttributes(std::vector<std::array<std::string, 2>> Attributes); //type of converter
 void scheduler(MegaStr *mStr);
 void schedule(verStr *gRoot, verStr *sPath, Calendar caltime);
 std::vector<scheduleProgress> demote(std::vector<scheduleProgress> itemList, int loopCount);
-std::vector<scheduleProgress> smartPass(std::vector<scheduleProgress> itemList);
+std::array<std::vector<scheduleProgress>, 2> smartPass(std::array<std::vector<scheduleProgress>, 2> itemList);
+std::array<std::vector<scheduleProgress>, 2> smartPass(std::vector<scheduleProgress> itemList, std::vector<scheduleProgress> container);
 std::vector<scheduleProgress> linearization(
     verStr *vStr,
     std::string parentPath,
@@ -41,10 +42,8 @@ std::vector<scheduleProgress> linearization(
 );
 std::vector<scheduleProgress> purge(std::vector<scheduleProgress> itemList, verStr* sPath);
 std::vector<scheduleProgress> trim(std::vector<scheduleProgress> itemList, verStr* sPath);
-// demote
-//smartPass
+void decontainerize(std::vector<scheduleProgress> itemList, verStr* sPath);
 
-// maybe shift to embedded function in megaStr
 // or return a whole tail to be attached
 void scheduler(MegaStr *mStr){
     bool ctr{false};
@@ -65,63 +64,64 @@ void scheduler(MegaStr *mStr){
 
 void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
     //linearization, trim //last, demote, purge, smartPass, (re)Schedule, collide --implement hybrid paradigm
-    //demote and smartPass need reverse tree assistance or some other mechanism
+    //demote and smartPass need reverse tree assistance or some other mechanism probably
     //embed necessary requirement checkers into each function and a strict requirement checker
 
 
     // functions roles and responsibilities
     //linearization: to convert tree to straight vector information // done // only need to be used once
     //trim: to handle events past                                   // last // only need to be called once
-    //demote: to deal with impossible requirements and prioities    // current focus    // deals with priorities and reqs
-    //purge: scrap tasks tat don't meet requirements                // half done        // deals with modified reqs and sPath
-    //smartPass: organize tasks into easier schedulable pieces      // avoid the ..plus marginEnd shenanigans // demote can undo this (known as shatter)// breakdown() for view
-    //                                                              // deals with modified reqs
-    //scedule: actually schedule the task                           // refactor // deals with modified reqs and sPath
-    //collide: use smart time alloc to maximize success rate instead of looping through until sudden success // half done
+    //demote: to deal with impossible requirements and prioities    // done simplified  // deals with priorities and reqs
+    //purge: scrap tasks tat don't meet requirements                // done simplified  // deals with modified reqs and sPath
+    //smartPass: organize tasks into easier schedulable pieces      // current focus    //avoid the ..plus marginEnd shenanigans // demote can undo this (known as shatter)// breakdown() for view
+    //                                                              // deals with modified reqs // resolved by resolve
+    //schedule: actually schedule the task                          // refactor         // deals with modified reqs and sPath
+    //collide: use smart time alloc to maximize success rate instead of looping through until sudden success // done simplified
     bool scheduled;
     int autoStart, loopCount = 0;
     std::vector<task> scheduleBook;
-    auto itemList = /*smartPass(*/purge( // let purge take in itemlist and sPath in one object
-        trim(
-            linearization(
-            gRoot,
-            std::string{},
-            attributeContainer{},
-            caltime
+    auto itemList = smartPass(
+        purge(
+            trim(
+                linearization(
+                    gRoot,
+                    "",
+                    attributeContainer{},
+                    caltime
+                ),
+                sPath
             ),
             sPath
         ),
-        sPath
-    );//)
+        std::vector<scheduleProgress>{}
+    );
 
-    while(!itemList.empty()){
-        for (auto item: itemList){ // go through the list of items to schedule
+    while(!itemList[0].empty()){
+        for (auto item: itemList[0]){ // go through the list of items to schedule
             // initialize all the variables
             scheduleBook = initAttributes(sPath->sortAttributes()->getAttributesList());
             //print(scheduleBook);
             scheduled = false;
             autoStart = std::stoi(item.attributes.get("start"));
             for (auto t : scheduleBook){
-                if (autoStart > caltime.minute_t){
-                    // condition checks.. behaviour and dependancies
-                    // check if scheduling before the next task's start time
-                    // if true, that means autoStart is in open time
-                    if (autoStart < t.getStart()){
-                        scheduled = collide(
-                            gRoot,
-                            sPath,
-                            caltime.minute_t + 1,
-                            item,
-                            scheduleBook,
-                            autoStart
-                        );
-                        if (scheduled) break;
-                    }
+                // condition checks.. behaviour and dependancies
+                // check if scheduling before the next task's start time
+                // if true, that means autoStart is in open time
+                if (autoStart > caltime.minute_t && autoStart < t.getStart()){
+                    scheduled = collide(
+                        gRoot,
+                        sPath,
+                        caltime.minute_t + 1,
+                        item,
+                        scheduleBook,
+                        autoStart
+                    );
+                    if (scheduled) break;
                 }
-                autoStart = t.getEnd();
+                autoStart = std::max(t.getEnd(), autoStart);
             }
             if (!scheduled){
-                scheduled = collide( //scheduled unused here // combine three occurances of collide into one
+                scheduled = collide( //scheduled unused here
                     gRoot,
                     sPath,
                     caltime.minute_t + 1,
@@ -132,8 +132,10 @@ void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
             }
         }
         // reinitialize itemList -list of tasks left to be scheduled
-        itemList = smartPass(purge(demote(itemList, loopCount++), sPath));
+        //loopcount and sPath needs to be oncorporated into a giant object to be passed around
+        itemList = smartPass(purge(demote(itemList[0], loopCount++), sPath), itemList[1]);
     }
+    decontainerize(itemList[1], sPath);
 }
 
 bool collide(
@@ -218,18 +220,48 @@ bool collide(
     return false;
 } // 100 lines total, 45 lines long without comments and formatting
 
+std::array<std::vector<scheduleProgress>, 2> smartPass(std::vector<scheduleProgress> itemList, std::vector<scheduleProgress> container){
+    return smartPass(std::array<std::vector<scheduleProgress>, 2>{itemList, container});
+}
 
-std::vector<scheduleProgress> smartPass(std::vector<scheduleProgress> itemList){
+std::array<std::vector<scheduleProgress>, 2> smartPass(std::array<std::vector<scheduleProgress>, 2> itemList){
+    //need a way to resolve and find dependencies like child(), find(), etc... 
+    for (auto& item : itemList[0]){
+        if (item.attributes.get("timeMarginEnd") != "NULL"){
+            itemList[1].push_back(item);
+            item.attributes.set(
+                "time",
+                stringify(
+                    std::stoi(item.attributes.get("time")) +
+                    std::stoi(item.attributes.get("timeMarginEnd"))
+                )
+            );
+            item.attributes.set("timeMarginEnd", "NULL");
+        }
+    }
     return itemList;
 }
 
-std::vector<scheduleProgress> demote(std::vector<scheduleProgress> itemList, int loopCount){// deals with priorities and requirements
-    auto stringify = [](int x){
-        std::stringstream ss;
-        ss << x;
-        return ss.str();
+void decontainerize(std::vector<scheduleProgress> itemList, verStr* sPath){
+    auto scheduleBook{initAttributes(sPath->sortAttributes()->getAttributesList())};
+    auto find = [](std::vector<scheduleProgress> itemList, std::string fullpath){ //expensive!
+        int iter{};
+        while (iter < itemList.size()){
+            if (itemList[iter].fullpath == fullpath) return iter;
+            iter++;
+        }
+        return iter;
     };
+    int iter{};
 
+    for (auto item : itemList){
+        iter = find(itemList, item.fullpath);
+        sPath->deleteAttribute(scheduleBook[iter].getFullStdTime());
+        sPath->attribute(stringify(scheduleBook[iter].getStart() + std::stoi(item.attributes.get("time"))), item.fullpath);
+    }
+}
+
+std::vector<scheduleProgress> demote(std::vector<scheduleProgress> itemList, int loopCount){// deals with priorities and requirements
     for (int iter{0}; iter != itemList.size(); iter++){
         itemList[iter].attributes.set("priority", stringify(std::stoi(itemList[iter].attributes.get("priority")) - loopCount*36));
     }
@@ -315,7 +347,10 @@ std::vector<scheduleProgress> linearization(
     scheduleProgress item{fullpath};
     std::vector<scheduleProgress> itemList, pList;
     //non-cascade attributes
-    std::string time{pass(vStr->get("time"), "30")}, start{pass(vStr->get("start"), "1")};
+    std::string
+        time{pass(vStr->get("time"), "30")},
+        start{pass(vStr->get("start"), "1")},
+        timeMarginEnd{pass(vStr->get("timeMarginEnd"), "0")};
     //cascade attributes
     //No trash value handling ***WARNING***
     cascadeAttributes.set(
@@ -345,7 +380,8 @@ std::vector<scheduleProgress> linearization(
     )->set(std::string{"start"}, start
     )->set(std::string{"type"}, cascadeAttributes.get("type")
     )->set(std::string{"date"}, cascadeAttributes.get("date")
-    )->set(std::string{"priority"}, cascadeAttributes.get("priority"));
+    )->set(std::string{"priority"}, cascadeAttributes.get("priority")
+    )->set(std::string("timeMarginEnd"), cascadeAttributes.get("timeMarginEnd"));
     //store item into itemList
     itemList.push_back(item);
     //attach childLists into itemList
@@ -360,6 +396,12 @@ std::vector<scheduleProgress> linearization(
 int ultraStoi(std::string str, int def){
     if (str == "NULL") return def;
     return std::stoi(str);
+};
+
+std::string stringify(int x){
+    std::stringstream ss;
+    ss << x;
+    return ss.str();
 };
 
 std::string stdTimeRep(int timeRep){

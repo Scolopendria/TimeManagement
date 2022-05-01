@@ -1,4 +1,6 @@
 // Main of TM
+//TM is getting rewritten to tm2 for increased functional and declarative programming styles
+//Along with better formatting, readability, and modularity
 
 #include "headers.h"
 #include <iostream>
