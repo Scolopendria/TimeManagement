@@ -72,7 +72,7 @@ void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
     //linearization: to convert tree to straight vector information // done // only need to be used once
     //trim: to handle events past                                   // last // only need to be called once
     //demote: to deal with impossible requirements and prioities    // done simplified  // deals with priorities and reqs
-    //purge: scrap tasks tat don't meet requirements                // done simplified  // deals with modified reqs and sPath
+    //purge: scrap tasks that don't meet requirements                // done simplified  // deals with modified reqs and sPath
     //smartPass: organize tasks into easier schedulable pieces      // current focus    //avoid the ..plus marginEnd shenanigans // demote can undo this (known as shatter)// breakdown() for view
     //                                                              // deals with modified reqs // resolved by resolve
     //schedule: actually schedule the task                          // refactor         // deals with modified reqs and sPath
@@ -121,7 +121,7 @@ void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
                 autoStart = std::max(t.getEnd(), autoStart);
             }
             if (!scheduled){
-                scheduled = collide( //scheduled unused here
+                scheduled = collide(// scheduled unused here
                     gRoot,
                     sPath,
                     caltime.minute_t + 1,
@@ -132,7 +132,7 @@ void schedule(verStr *gRoot, verStr *sPath, Calendar caltime){
             }
         }
         // reinitialize itemList -list of tasks left to be scheduled
-        //loopcount and sPath needs to be oncorporated into a giant object to be passed around
+        // loopcount and sPath needs to be incorporated into a giant object to be passed around
         itemList = smartPass(purge(demote(itemList[0], loopCount++), sPath), itemList[1]);
     }
     decontainerize(itemList[1], sPath);
